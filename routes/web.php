@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ChitController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\SystemLogController;
 use App\Http\Controllers\ProfileController;
@@ -47,8 +48,9 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::view('/chits', 'admin.chits.index')->name('chits.index');
-    Route::view('/chits/create', 'admin.chits.create')->name('chits.create');
+    Route::get('/chits', [ChitController::class, 'index'])->name('chits.index');
+    Route::get('/chits/create', [ChitController::class, 'create'])->name('chits.create');
+    Route::post('/chits', [ChitController::class, 'store'])->name('chits.store');
     Route::get('/system-logs', [SystemLogController::class, 'index'])->name('system-logs.index');
 
     Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');

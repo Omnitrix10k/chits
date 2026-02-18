@@ -1,0 +1,187 @@
+.chits-page .chit-toolbar-card,
+.chits-page .chit-filter-card,
+.chits-page .chit-rules-card,
+.chit-create-page .chit-rules-card,
+.chit-create-page .chit-step-indicator-card,
+.chit-create-page .chit-step-card {
+  border: 1px solid #dce3f2;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(25, 60, 120, 0.08);
+}
+
+.chit-toolbar-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #193c78;
+  margin-bottom: 0.25rem;
+}
+
+.chit-toolbar-subtitle {
+  color: #6f7f98;
+}
+
+.chit-rules-card ul {
+  padding-left: 1.1rem;
+  color: #4f5f78;
+}
+
+.chit-card {
+  border: 1px solid #e0e7f5;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(13, 53, 120, 0.07);
+}
+
+.chit-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #16386f;
+}
+
+.chit-type-badge {
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+}
+
+.chit-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.chit-stat-label {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #7c8ba3;
+}
+
+.chit-stat-value {
+  margin: 0.2rem 0 0;
+  color: #1d325c;
+  font-weight: 700;
+}
+
+.chit-card-footer {
+  border-top: 1px dashed #d9e2f2;
+  padding-top: 0.75rem;
+}
+
+.chit-step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.step-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #73839d;
+  font-weight: 600;
+}
+
+.step-chip-number {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid #b8c6df;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+}
+
+.step-chip.active {
+  color: #1f4da1;
+}
+
+.step-chip.active .step-chip-number {
+  background: #2f67d7;
+  color: #fff;
+  border-color: #2f67d7;
+}
+
+.step-divider {
+  flex: 1;
+  height: 1px;
+  background: #d8e1f0;
+}
+
+.slot-counter {
+  border-radius: 999px;
+  background: #eef4ff;
+  border: 1px solid #d5e2ff;
+  color: #234f9f;
+  padding: 0.4rem 0.85rem;
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+.member-pick-card {
+  border: 1px solid #dce4f6;
+  border-radius: 12px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.member-pick-clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.member-pick-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(21, 64, 129, 0.13);
+}
+
+.member-pick-active {
+  border-color: #5f8de0;
+  box-shadow: 0 8px 22px rgba(47, 103, 215, 0.16);
+}
+
+.member-pick-maxed {
+  border-color: #f0ad4e;
+}
+
+.member-pick-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid #dce4f4;
+}
+
+.member-pick-name {
+  font-size: 0.95rem;
+  color: #1d3763;
+  font-weight: 700;
+}
+
+.member-pick-meta {
+  font-size: 0.82rem;
+  color: #7484a0;
+}
+
+.slot-badge {
+  display: inline-block;
+  background: #f2f6ff;
+  border: 1px solid #dde7ff;
+  color: #2d4f93;
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.78rem;
+}
+
+.member-action-hint {
+  font-size: 0.74rem;
+}
+
+@media (max-width: 768px) {
+  .chit-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .step-chip-label {
+    font-size: 0.82rem;
+  }
+}
