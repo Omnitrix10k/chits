@@ -1,0 +1,50 @@
+.goud-sidebar-brand-wrap {
+  margin-bottom: 0.9rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid #eef2f8;
+}
+
+.goud-sidebar-brand-wrap .logo {
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.goud-sidebar-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1rem;
+  color: #ffffff;
+  background: linear-gradient(135deg, #5b7cff, #3e52d9);
+}
+
+.goud-sidebar-brand-wrap .logo span:last-child {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #012970;
+}
+
+.goud-logout-dropdown-btn {
+  cursor: pointer;
+}
+
+.header .search-bar {
+  max-width: 560px;
+  width: 100%;
+}
+
+@media (max-width: 1199px) {
+  .header {
+    padding-left: 10px;
+  }
+
+  .header .search-bar {
+    max-width: none;
+  }
+}

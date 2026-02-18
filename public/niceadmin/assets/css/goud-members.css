@@ -1,0 +1,250 @@
+.members-toolbar-card {
+  border: 1px solid #e3eaf6;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(13, 36, 78, 0.06);
+}
+
+.members-filter-card {
+  border: 1px solid #e3eaf6;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(13, 36, 78, 0.04);
+}
+
+.members-toolbar-title {
+  margin: 0;
+  color: #112f5a;
+  font-size: 1.24rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.members-toolbar-subtitle {
+  margin-top: 0.2rem;
+  margin-bottom: 0;
+  color: #6c83a5;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.member-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.95rem;
+}
+
+.member-card {
+  border: 1px solid #dbe5f4;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f8fbff 0%, #f3f7ff 100%);
+  box-shadow: 0 10px 24px rgba(12, 33, 74, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.member-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(12, 33, 74, 0.11);
+}
+
+.member-card-body {
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 0.85rem;
+}
+
+.member-avatar {
+  width: 104px;
+  height: 128px;
+  border-radius: 12px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px #d8e2f2;
+  object-fit: cover;
+  background: #fff;
+}
+
+.member-main {
+  min-width: 0;
+}
+
+.member-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  margin-bottom: 0.55rem;
+}
+
+.member-name {
+  margin: 0;
+  font-size: 1rem;
+  color: #0f2f5c;
+  font-weight: 800;
+  line-height: 1.22;
+  letter-spacing: -0.01em;
+}
+
+.member-role-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.24rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #355b92;
+  background: #deebff;
+  border: 1px solid #c5dafb;
+  border-radius: 999px;
+  padding: 0.18rem 0.55rem;
+}
+
+.member-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.45rem;
+}
+
+.member-meta-item {
+  min-width: 0;
+}
+
+.member-meta-item.member-meta-wide {
+  grid-column: 1 / -1;
+}
+
+.member-meta-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.16rem;
+  color: #7a8ea9;
+  font-size: 0.73rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.member-meta-value {
+  margin: 0;
+  color: #2a476f;
+  font-size: 0.89rem;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.member-pdf-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  color: #b42336;
+  font-weight: 700;
+}
+
+.member-pdf-link:hover {
+  color: #90192b;
+}
+
+.member-pdf-missing {
+  display: inline-flex;
+  align-items: center;
+  color: #6f819d;
+  font-weight: 600;
+}
+
+.member-actions {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.48rem;
+}
+
+.member-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  border: 1px solid #ccd8ec;
+  background: #ffffff;
+  color: #29466f;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.member-icon-btn:hover {
+  color: #2f4ce6;
+  border-color: #bacbf0;
+  background: #f2f6ff;
+}
+
+.member-icon-btn.member-delete {
+  color: #ba2c41;
+  border-color: #efc6ce;
+}
+
+.member-icon-btn.member-delete:hover {
+  color: #ffffff;
+  background: #dc3545;
+  border-color: #dc3545;
+}
+
+.members-empty {
+  border: 1px dashed #d5dfef;
+  border-radius: 14px;
+  background: #f9fbff;
+}
+
+.members-pagination-wrap {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.members-pagination-wrap .pagination {
+  margin-bottom: 0;
+}
+
+.members-pagination-wrap .page-link {
+  border-radius: 8px !important;
+}
+
+@media (max-width: 1400px) {
+  .member-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 991.98px) {
+  .member-card-body {
+    grid-template-columns: 108px minmax(0, 1fr) auto;
+    gap: 0.75rem;
+  }
+
+  .member-avatar {
+    width: 108px;
+    height: 128px;
+  }
+
+  .member-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .member-card-body {
+    grid-template-columns: 1fr;
+  }
+
+  .member-avatar {
+    width: 100%;
+    height: 190px;
+  }
+
+  .member-actions {
+    flex-direction: row;
+  }
+}

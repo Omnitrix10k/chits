@@ -31,6 +31,8 @@ class ProfileUpdateRequest extends FormRequest
                 'regex:/^\+?[0-9]{7,15}$/',
                 Rule::unique(User::class, 'mobile_number')->ignore($this->user()->id),
             ],
+            'profile_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'remove_profile_image' => ['nullable', 'boolean'],
         ];
     }
 }

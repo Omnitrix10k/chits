@@ -35,6 +35,7 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'mobile_number' => ['required', 'string', 'regex:/^\+?[0-9]{7,15}$/', Rule::unique(User::class, 'mobile_number')],
+            'role' => ['required', Rule::in(User::ROLES)],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -42,6 +43,8 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => Str::lower($request->string('email')->toString()),
             'mobile_number' => $request->string('mobile_number')->toString(),
+            'primary_phone' => $request->string('mobile_number')->toString(),
+            'role' => $request->string('role')->toString(),
             'password' => Hash::make($request->password),
         ]);
 

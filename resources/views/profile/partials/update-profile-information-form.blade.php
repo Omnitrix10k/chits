@@ -13,9 +13,45 @@
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="mt-6 space-y-6">
         @csrf
         @method('patch')
+
+        <div>
+            <x-input-label for="profile_image" :value="__('Profile Image (Optional)')" />
+            <div class="mt-2 flex items-center gap-4">
+                <img
+                    src="{{ $user->profile_image_url }}"
+                    alt="{{ $user->name }}"
+                    class="h-20 w-20 rounded-full border border-gray-200 object-cover"
+                >
+                <div class="w-full">
+                    <input
+                        id="profile_image"
+                        name="profile_image"
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        class="block w-full rounded-md border-gray-300 text-sm text-gray-700 shadow-sm"
+                    >
+                    <p class="mt-1 text-xs text-gray-500">{{ __('JPG, PNG, or WEBP. Max 2MB. Auto-optimized for faster loading.') }}</p>
+
+                    @if ($user->profile_image_path)
+                        <label class="mt-2 inline-flex items-center gap-2 text-sm text-gray-700">
+                            <input
+                                type="checkbox"
+                                name="remove_profile_image"
+                                value="1"
+                                @checked(old('remove_profile_image'))
+                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                            >
+                            <span>{{ __('Remove current image') }}</span>
+                        </label>
+                    @endif
+                </div>
+            </div>
+            <x-input-error class="mt-2" :messages="$errors->get('profile_image')" />
+            <x-input-error class="mt-2" :messages="$errors->get('remove_profile_image')" />
+        </div>
 
         <div>
             <x-input-label for="name" :value="__('Name')" />

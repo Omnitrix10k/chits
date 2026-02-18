@@ -27,6 +27,16 @@
             <x-input-error :messages="$errors->get('mobile_number')" class="mt-2" />
         </div>
 
+        <div class="mt-4">
+            <x-input-label for="role" :value="__('Role')" />
+            <select id="role" name="role" required class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                <option value="admin" @selected(old('role') === 'admin')>{{ __('Admin') }}</option>
+                <option value="editor" @selected(old('role') === 'editor')>{{ __('Editor') }}</option>
+                <option value="user" @selected(old('role', 'user') === 'user')>{{ __('User') }}</option>
+            </select>
+            <x-input-error :messages="$errors->get('role')" class="mt-2" />
+        </div>
+
         <!-- Password -->
         <div class="mt-4">
             <x-input-label for="password" :value="__('Password')" />

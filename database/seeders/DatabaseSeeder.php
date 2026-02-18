@@ -16,14 +16,22 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::query()->firstOrCreate(
-            ['email' => 'admin@example.com'],
+        $adminEmail = (string) env('ADMIN_EMAIL', 'admin@example.com');
+        $adminMobile = (string) env('ADMIN_MOBILE', '+15555550100');
+        $adminPassword = (string) env('ADMIN_PASSWORD', 'password');
+
+        User::query()->updateOrCreate(
+            ['email' => $adminEmail],
             [
                 'name' => 'Admin User',
-                'mobile_number' => '+15555550100',
+                'first_name' => 'Admin',
+                'last_name' => 'User',
+                'mobile_number' => $adminMobile,
+                'primary_phone' => $adminMobile,
+                'address' => null,
                 'role' => User::ROLE_ADMIN,
                 'email_verified_at' => now(),
-                'password' => Hash::make('password'),
+                'password' => Hash::make($adminPassword),
             ]
         );
     }

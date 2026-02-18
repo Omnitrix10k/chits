@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\ProfileImageManager;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -29,8 +30,21 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'first_name',
+        'last_name',
         'email',
         'mobile_number',
+        'primary_phone',
+        'address',
+        'government_id_path',
+        'profile_image_path',
+        'family_name',
+        'family_government_id',
+        'family_relation',
+        'family_phone_number',
+        'family_cheque_number',
+        'family_bank_name',
+        'family_address',
         'role',
         'password',
     ];
@@ -66,5 +80,10 @@ class User extends Authenticatable
     public function hasRole(string $role): bool
     {
         return $this->role === $role;
+    }
+
+    public function getProfileImageUrlAttribute(): string
+    {
+        return ProfileImageManager::url($this->profile_image_path);
     }
 }

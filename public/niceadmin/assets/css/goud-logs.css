@@ -1,0 +1,96 @@
+.logs-toolbar-card,
+.logs-filter-card,
+.logs-table-card {
+  border: 1px solid #e3eaf6;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(13, 36, 78, 0.05);
+}
+
+.logs-toolbar-title {
+  margin: 0;
+  color: #112f5a;
+  font-size: 1.22rem;
+  font-weight: 800;
+}
+
+.logs-toolbar-subtitle {
+  margin-top: 0.25rem;
+  margin-bottom: 0;
+  color: #6c83a5;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.logs-table {
+  margin-bottom: 0;
+  min-width: 980px;
+}
+
+.logs-table th {
+  color: #6f85a7;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+}
+
+.logs-table td {
+  color: #29466f;
+  font-size: 0.9rem;
+  vertical-align: top;
+}
+
+.log-role-badge {
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.18rem 0.55rem;
+  border: 1px solid;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.log-role-admin {
+  color: #1f4f90;
+  background: #dcebff;
+  border-color: #c5dcfa;
+}
+
+.log-role-editor {
+  color: #256845;
+  background: #def5e8;
+  border-color: #cae8d7;
+}
+
+.log-action-badge {
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.52rem;
+  border: 1px solid #d8e3f6;
+  color: #284773;
+  background: #f5f8ff;
+}
+
+.logs-description {
+  max-width: 260px;
+  white-space: normal;
+}
+
+.logs-pagination-wrap {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.logs-pagination-wrap .pagination {
+  margin-bottom: 0;
+}
+
+.logs-pagination-wrap .page-link {
+  border-radius: 8px !important;
+}

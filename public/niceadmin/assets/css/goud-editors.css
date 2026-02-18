@@ -1,0 +1,242 @@
+.editors-toolbar-card {
+  border: 1px solid #e3eaf6;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(13, 36, 78, 0.06);
+}
+
+.editors-filter-card {
+  border: 1px solid #e3eaf6;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(13, 36, 78, 0.04);
+}
+
+.editors-toolbar-title {
+  margin: 0;
+  color: #112f5a;
+  font-size: 1.24rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.editors-toolbar-subtitle {
+  margin-top: 0.2rem;
+  margin-bottom: 0;
+  color: #6c83a5;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.editor-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.95rem;
+}
+
+.editor-card {
+  border: 1px solid #dbe5f4;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f8fbff 0%, #f3f7ff 100%);
+  box-shadow: 0 10px 24px rgba(12, 33, 74, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.editor-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(12, 33, 74, 0.11);
+}
+
+.editor-card-body {
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 0.85rem;
+}
+
+.editor-avatar {
+  width: 104px;
+  height: 128px;
+  border-radius: 12px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px #d8e2f2;
+  object-fit: cover;
+  background: #fff;
+}
+
+.editor-main {
+  min-width: 0;
+}
+
+.editor-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  margin-bottom: 0.55rem;
+}
+
+.editor-name {
+  margin: 0;
+  font-size: 1rem;
+  color: #0f2f5c;
+  font-weight: 800;
+  line-height: 1.22;
+  letter-spacing: -0.01em;
+}
+
+.editor-role-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.24rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #24613f;
+  background: #def5e8;
+  border: 1px solid #c4e8d3;
+  border-radius: 999px;
+  padding: 0.18rem 0.55rem;
+}
+
+.editor-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.45rem;
+}
+
+.editor-meta-item {
+  min-width: 0;
+}
+
+.editor-meta-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.16rem;
+  color: #7a8ea9;
+  font-size: 0.73rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.editor-meta-value {
+  margin: 0;
+  color: #2a476f;
+  font-size: 0.89rem;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.editor-image-uploaded {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #1e7f3e;
+  font-weight: 700;
+}
+
+.editor-image-missing {
+  display: inline-flex;
+  align-items: center;
+  color: #6f819d;
+  font-weight: 600;
+}
+
+.editor-actions {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.48rem;
+}
+
+.editor-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  border: 1px solid #ccd8ec;
+  background: #ffffff;
+  color: #29466f;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.editor-icon-btn:hover {
+  color: #2f4ce6;
+  border-color: #bacbf0;
+  background: #f2f6ff;
+}
+
+.editor-icon-btn.editor-delete {
+  color: #ba2c41;
+  border-color: #efc6ce;
+}
+
+.editor-icon-btn.editor-delete:hover {
+  color: #ffffff;
+  background: #dc3545;
+  border-color: #dc3545;
+}
+
+.editors-empty {
+  border: 1px dashed #d5dfef;
+  border-radius: 14px;
+  background: #f9fbff;
+}
+
+.editors-pagination-wrap {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.editors-pagination-wrap .pagination {
+  margin-bottom: 0;
+}
+
+.editors-pagination-wrap .page-link {
+  border-radius: 8px !important;
+}
+
+@media (max-width: 1400px) {
+  .editor-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 991.98px) {
+  .editor-card-body {
+    grid-template-columns: 108px minmax(0, 1fr) auto;
+    gap: 0.75rem;
+  }
+
+  .editor-avatar {
+    width: 108px;
+    height: 128px;
+  }
+
+  .editor-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .editor-card-body {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-avatar {
+    width: 100%;
+    height: 190px;
+  }
+
+  .editor-actions {
+    flex-direction: row;
+  }
+}

@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 test('profile page is displayed', function () {
     $user = User::factory()->create();
@@ -85,4 +87,42 @@ test('correct password must be provided to delete account', function () {
         ->assertRedirect('/profile');
 
     $this->assertNotNull($user->fresh());
+});
+
+test('profile image can be uploaded and removed', function () {
+    Storage::fake('public');
+    $user = User::factory()->create();
+
+    $uploadResponse = $this
+        ->actingAs($user)
+        ->patch('/profile', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'mobile_number' => '+15555550101',
+            'profile_image' => UploadedFile::fake()->image('avatar.jpg', 1200, 1200),
+        ]);
+
+    $uploadResponse
+        ->assertSessionHasNoErrors()
+        ->assertRedirect('/profile');
+
+    $user->refresh();
+    expect($user->profile_image_path)->not->toBeNull();
+    Storage::disk('public')->assertExists($user->profile_image_path);
+
+    $removeResponse = $this
+        ->actingAs($user)
+        ->patch('/profile', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'mobile_number' => '+15555550101',
+            'remove_profile_image' => 1,
+        ]);
+
+    $removeResponse
+        ->assertSessionHasNoErrors()
+        ->assertRedirect('/profile');
+
+    $user->refresh();
+    expect($user->profile_image_path)->toBeNull();
 });
