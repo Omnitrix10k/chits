@@ -166,6 +166,7 @@ class UserManagementController extends Controller
             'email' => Str::lower($validated['email']),
             'mobile_number' => $validated['mobile_number'],
             'primary_phone' => $validated['mobile_number'],
+            'referred_by_name' => $this->normalizeNullableString($validated['referred_by_name'] ?? null),
             'role' => User::ROLE_USER,
             'government_id_path' => $governmentIdPath,
             'profile_image_path' => $profileImagePath,
@@ -230,6 +231,7 @@ class UserManagementController extends Controller
             'email' => Str::lower($validated['email']),
             'mobile_number' => $validated['mobile_number'],
             'primary_phone' => $validated['mobile_number'],
+            'referred_by_name' => $this->normalizeNullableString($validated['referred_by_name'] ?? null),
             'government_id_path' => $governmentIdPath,
             'profile_image_path' => $profileImagePath,
             'family_name' => $validated['surety_name'],
@@ -410,6 +412,7 @@ class UserManagementController extends Controller
                 Rule::unique(User::class, 'mobile_number')->ignore($member?->id),
                 Rule::unique(User::class, 'primary_phone')->ignore($member?->id),
             ],
+            'referred_by_name' => ['nullable', 'string', 'max:255'],
             'government_id' => ['nullable', 'file', 'mimetypes:application/pdf', 'max:10240'],
             'surety_name' => ['required', 'string', 'max:255'],
             'surety_relation' => ['required', Rule::in(self::SURETY_RELATIONS)],
@@ -447,5 +450,12 @@ class UserManagementController extends Controller
         abort_unless($user->role === $role, 404);
 
         return $user;
+    }
+
+    private function normalizeNullableString(?string $value): ?string
+    {
+        $normalized = trim((string) $value);
+
+        return $normalized === '' ? null : $normalized;
     }
 }

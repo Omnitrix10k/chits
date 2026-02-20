@@ -9,15 +9,13 @@
         ? filemtime(public_path('css/chits.css'))
         : time();
 
-    $selectedPlan = old('chit_name', array_key_first($planOptions));
-    if (! array_key_exists($selectedPlan, $planOptions)) {
-        $selectedPlan = array_key_first($planOptions);
-    }
+    $selectedPlanText = trim((string) old('chit_name', ''));
 
     $selectedType = old('chit_type', 'auction');
     $durationPreview = max((int) old('duration_months', 20), 1);
-    $totalAmountPreview = $planOptions[$selectedPlan]['amount'] ?? 0;
-    $monthlyAmountPreview = (int) round((int) $totalAmountPreview / $durationPreview);
+    $memberLimitPreview = max((int) old('member_limit', $memberLimit), 1);
+    $totalAmountPreview = max((int) old('total_amount', 100000), 1);
+    $monthlyAmountPreview = \App\Models\Chit::calculateMonthlyAmount((int) $totalAmountPreview, $durationPreview, $memberLimitPreview);
     $selectedMemberSlotsCount = array_sum($selectedMembers);
 @endphp
 
@@ -27,6 +25,23 @@
 
 @section('content')
     <section class="section chit-create-page">
+        <div class="card chit-create-hero-card mb-3">
+            <div class="card-body p-3 p-lg-4">
+                <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+                    <div>
+                        <p class="chit-overview-kicker mb-1">Chit Workflow</p>
+                        <h4 class="chit-overview-title mb-1">Create New Chit</h4>
+                        <p class="chit-overview-subtitle mb-0">
+                            Configure chit details, define member capacity, and assign slots with validation in a single guided flow.
+                        </p>
+                    </div>
+                    <a href="{{ route('admin.chits.index') }}" class="btn btn-outline-secondary chit-overview-cta">
+                        <i class="bi bi-arrow-left me-1"></i>Back To Chits
+                    </a>
+                </div>
+            </div>
+        </div>
+
         <div class="row g-3">
             <div class="col-12">
                 <div class="card chit-rules-card">
@@ -34,9 +49,9 @@
                         <h6 class="mb-2">Chit Creation Rules</h6>
                         <ul class="mb-0">
                             <li>Select one chit plan and type first.</li>
-                            <li>Total slots required per chit: <strong>{{ $memberLimit }}</strong>.</li>
-                            <li>Maximum repeats per member: <strong>{{ $maxRepeatPerMember }}</strong>.</li>
-                            <li>Monthly amount is auto-calculated from total value / duration months.</li>
+                            <li>Set total members in step 1; the same slot count must be assigned in step 2.</li>
+                            <li>Maximum repeats per member is dynamic up to <strong>{{ $maxRepeatPerMember }}</strong> per chit.</li>
+                            <li>Enter total chit value manually; monthly amount is auto-calculated as total value / total members.</li>
                         </ul>
                     </div>
                 </div>
@@ -82,7 +97,7 @@
             >
 
             <div id="slotValidationAlert" class="alert alert-danger d-none" role="alert">
-                You must assign exactly {{ $memberLimit }} member slots before creating the chit.
+                You must assign exactly <strong id="slotValidationLimit">{{ $memberLimitPreview }}</strong> member slots before creating the chit.
             </div>
 
             <div id="chitDetailsStep" class="card chit-step-card">
@@ -94,17 +109,21 @@
                     <div class="row g-3">
                         <div class="col-lg-6">
                             <label for="chitName" class="form-label">Chit Name</label>
-                            <select id="chitName" name="chit_name" class="form-select" required>
+                            <input
+                                id="chitName"
+                                type="text"
+                                name="chit_name"
+                                class="form-control"
+                                list="chitNameSuggestions"
+                                value="{{ $selectedPlanText }}"
+                                placeholder="Enter chit name"
+                                required
+                            >
+                            <datalist id="chitNameSuggestions">
                                 @foreach ($planOptions as $planKey => $plan)
-                                    <option
-                                        value="{{ $planKey }}"
-                                        data-amount="{{ $plan['amount'] }}"
-                                        @selected($selectedPlan === $planKey)
-                                    >
-                                        {{ $plan['label'] }}
-                                    </option>
+                                    <option value="{{ $plan['label'] }}"></option>
                                 @endforeach
-                            </select>
+                            </datalist>
                         </div>
 
                         <div class="col-lg-6">
@@ -136,12 +155,35 @@
                             </div>
                         </div>
 
-                        <div class="col-lg-4">
+                        <div class="col-lg-3">
                             <label for="totalValue" class="form-label">Total Chit Value</label>
-                            <input id="totalValue" type="text" class="form-control" value="{{ number_format($totalAmountPreview) }}" readonly>
+                            <input
+                                id="totalValue"
+                                type="number"
+                                name="total_amount"
+                                class="form-control"
+                                min="1"
+                                step="1"
+                                value="{{ $totalAmountPreview }}"
+                                required
+                            >
                         </div>
 
-                        <div class="col-lg-4">
+                        <div class="col-lg-3">
+                            <label for="memberLimit" class="form-label">Total Members</label>
+                            <input
+                                id="memberLimit"
+                                type="number"
+                                name="member_limit"
+                                class="form-control"
+                                min="1"
+                                max="250"
+                                value="{{ $memberLimitPreview }}"
+                                required
+                            >
+                        </div>
+
+                        <div class="col-lg-3">
                             <label for="durationMonths" class="form-label">Duration (Months)</label>
                             <input
                                 id="durationMonths"
@@ -155,7 +197,7 @@
                             >
                         </div>
 
-                        <div class="col-lg-4">
+                        <div class="col-lg-3">
                             <label for="monthlyAmount" class="form-label">Monthly Amount</label>
                             <input id="monthlyAmount" type="text" class="form-control" value="{{ number_format($monthlyAmountPreview) }}" readonly>
                         </div>
@@ -182,7 +224,7 @@
                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
                         <h5 class="card-title mb-0">Step 2: Add Members</h5>
                         <div class="slot-counter">
-                            Slots Filled: <span id="slotCount">{{ $selectedMemberSlotsCount }}</span>/{{ $memberLimit }}
+                            Slots Filled: <span id="slotCount">{{ $selectedMemberSlotsCount }}</span>/<span id="slotLimit">{{ $memberLimitPreview }}</span>
                         </div>
                     </div>
 
@@ -268,9 +310,8 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const memberLimit = {{ $memberLimit }};
-            const maxRepeatPerMember = {{ $maxRepeatPerMember }};
-            const planAmounts = @json(collect($planOptions)->mapWithKeys(static fn ($plan, $key) => [$key => (int) $plan['amount']])->all());
+            const initialMemberLimit = {{ $memberLimitPreview }};
+            const maxRepeatPerMemberCap = {{ $maxRepeatPerMember }};
 
             const form = document.getElementById('chitCreateForm');
             const stepOnePane = document.getElementById('chitDetailsStep');
@@ -285,10 +326,13 @@
             const chitNameInput = document.getElementById('chitName');
             const durationInput = document.getElementById('durationMonths');
             const totalValueInput = document.getElementById('totalValue');
+            const memberLimitInput = document.getElementById('memberLimit');
             const monthlyAmountInput = document.getElementById('monthlyAmount');
 
             const selectedMembersInput = document.getElementById('selectedMembersInput');
             const slotCountNode = document.getElementById('slotCount');
+            const slotLimitNode = document.getElementById('slotLimit');
+            const slotValidationLimitNode = document.getElementById('slotValidationLimit');
             const slotValidationAlert = document.getElementById('slotValidationAlert');
 
             const memberSearchInput = document.getElementById('memberSearch');
@@ -297,7 +341,7 @@
             const memberCards = Array.from(document.querySelectorAll('.member-pick-card'));
             const clickTimers = new Map();
             const draftKey = 'goud_chit_step1_draft';
-            const hasOldInput = {{ old('chit_name') || old('chit_type') || old('duration_months') ? 'true' : 'false' }};
+            const hasOldInput = {{ old('chit_name') || old('chit_type') || old('duration_months') || old('total_amount') || old('member_limit') ? 'true' : 'false' }};
 
             let selectedCounts = {};
             try {
@@ -335,9 +379,22 @@
                 }, 0);
             }
 
+            function currentMemberLimit() {
+                const parsed = Math.round(Number(memberLimitInput.value) || initialMemberLimit || 1);
+                return Math.max(1, parsed);
+            }
+
+            function currentMaxRepeatPerMember() {
+                return Math.max(1, Math.min(maxRepeatPerMemberCap, currentMemberLimit()));
+            }
+
             function syncSummary() {
                 const total = totalSlotsSelected();
+                const memberLimit = currentMemberLimit();
+
                 slotCountNode.textContent = String(total);
+                slotLimitNode.textContent = String(memberLimit);
+                slotValidationLimitNode.textContent = String(memberLimit);
                 slotValidationAlert.classList.toggle('d-none', total === memberLimit);
             }
 
@@ -345,6 +402,8 @@
                 const memberId = String(card.dataset.memberId);
                 const count = Number(selectedCounts[memberId] || 0);
                 const total = totalSlotsSelected();
+                const memberLimit = currentMemberLimit();
+                const maxRepeatPerMember = currentMaxRepeatPerMember();
                 const canIncrease = count < maxRepeatPerMember && total < memberLimit;
 
                 const countNode = card.querySelector('.member-slot-count');
@@ -376,23 +435,29 @@
 
             function calculateMonthlyAmount(total, durationMonths) {
                 const safeDuration = Math.max(1, Number(durationMonths) || 1);
-                return Math.round(total / safeDuration);
+                const safeMemberLimit = currentMemberLimit();
+
+                // Duration is validated and stored for schedule handling; per-member amount is total/member count.
+                if (safeDuration < 1) {
+                    return 0;
+                }
+                return Math.round(total / safeMemberLimit);
             }
 
             function updateAmountPreview() {
-                const planKey = chitNameInput.value;
-                const total = Number(planAmounts[planKey] || 0);
+                const total = Math.max(0, Math.round(Number(totalValueInput.value || 0)));
                 const monthly = calculateMonthlyAmount(total, durationInput.value);
 
-                totalValueInput.value = total.toLocaleString('en-IN');
                 monthlyAmountInput.value = monthly.toLocaleString('en-IN');
             }
 
             function persistStepOneDraft() {
                 const selectedType = document.querySelector('input[name="chit_type"]:checked');
                 const payload = {
-                    chit_name: chitNameInput.value,
+                    chit_name: chitNameInput.value.trim(),
                     chit_type: selectedType ? selectedType.value : 'auction',
+                    total_amount: Math.max(1, Math.round(Number(totalValueInput.value) || 1)),
+                    member_limit: currentMemberLimit(),
                     duration_months: Math.max(1, Number(durationInput.value) || 1),
                 };
 
@@ -415,12 +480,20 @@
                         return;
                     }
 
-                    if (parsed.chit_name && planAmounts[parsed.chit_name] !== undefined) {
+                    if (parsed.chit_name && parsed.chit_name.trim() !== '') {
                         chitNameInput.value = parsed.chit_name;
                     }
 
                     if (parsed.duration_months && Number(parsed.duration_months) > 0) {
                         durationInput.value = String(Math.round(Number(parsed.duration_months)));
+                    }
+
+                    if (parsed.total_amount && Number(parsed.total_amount) > 0) {
+                        totalValueInput.value = String(Math.round(Number(parsed.total_amount)));
+                    }
+
+                    if (parsed.member_limit && Number(parsed.member_limit) > 0) {
+                        memberLimitInput.value = String(Math.round(Number(parsed.member_limit)));
                     }
 
                     if (parsed.chit_type === 'auction' || parsed.chit_type === 'fixed') {
@@ -451,6 +524,8 @@
             function incrementMember(memberId) {
                 const total = totalSlotsSelected();
                 const current = Number(selectedCounts[memberId] || 0);
+                const memberLimit = currentMemberLimit();
+                const maxRepeatPerMember = currentMaxRepeatPerMember();
 
                 if (total >= memberLimit || current >= maxRepeatPerMember) {
                     return;
@@ -478,33 +553,30 @@
             memberCards.forEach(function (card) {
                 const memberId = String(card.dataset.memberId);
 
-                card.addEventListener('click', function () {
+                card.addEventListener('click', function (event) {
                     const existingTimer = clickTimers.get(memberId);
                     if (existingTimer) {
                         clearTimeout(existingTimer);
+                        clickTimers.delete(memberId);
+                    }
+
+                    // 1 click => +1, 2 clicks => -1 (must not apply +1 first).
+                    if (event.detail >= 2) {
+                        decrementMember(memberId);
+                        return;
                     }
 
                     const timer = window.setTimeout(function () {
                         clickTimers.delete(memberId);
                         incrementMember(memberId);
-                    }, 210);
+                    }, 320);
 
                     clickTimers.set(memberId, timer);
-                });
-
-                card.addEventListener('dblclick', function () {
-                    const existingTimer = clickTimers.get(memberId);
-                    if (existingTimer) {
-                        clearTimeout(existingTimer);
-                        clickTimers.delete(memberId);
-                    }
-
-                    decrementMember(memberId);
                 });
             });
 
             nextButton.addEventListener('click', function () {
-                if (!chitNameInput.reportValidity() || !durationInput.reportValidity()) {
+                if (!chitNameInput.reportValidity() || !memberLimitInput.reportValidity() || !durationInput.reportValidity()) {
                     return;
                 }
 
@@ -517,7 +589,7 @@
             });
 
             saveDetailsButton.addEventListener('click', function () {
-                if (!chitNameInput.reportValidity() || !durationInput.reportValidity()) {
+                if (!chitNameInput.reportValidity() || !memberLimitInput.reportValidity() || !durationInput.reportValidity()) {
                     return;
                 }
 
@@ -530,12 +602,31 @@
 
             memberSearchInput.addEventListener('input', applyMemberFilters);
             govtFilterInput.addEventListener('change', applyMemberFilters);
-            chitNameInput.addEventListener('change', updateAmountPreview);
+            totalValueInput.addEventListener('input', updateAmountPreview);
+            totalValueInput.addEventListener('change', updateAmountPreview);
+            totalValueInput.addEventListener('blur', function () {
+                const rounded = Math.max(1, Math.round(Number(totalValueInput.value) || 1));
+                totalValueInput.value = String(rounded);
+                updateAmountPreview();
+            });
             durationInput.addEventListener('input', updateAmountPreview);
             durationInput.addEventListener('change', updateAmountPreview);
+            memberLimitInput.addEventListener('input', function () {
+                const normalized = currentMemberLimit();
+                memberLimitInput.value = String(normalized);
+                updateAmountPreview();
+                syncAllCards();
+            });
+            memberLimitInput.addEventListener('change', function () {
+                const normalized = currentMemberLimit();
+                memberLimitInput.value = String(normalized);
+                updateAmountPreview();
+                syncAllCards();
+            });
 
             form.addEventListener('submit', function (event) {
                 const total = totalSlotsSelected();
+                const memberLimit = currentMemberLimit();
                 if (total !== memberLimit) {
                     event.preventDefault();
                     showStep(2);
@@ -549,6 +640,7 @@
             });
 
             restoreStepOneDraft();
+            memberLimitInput.value = String(currentMemberLimit());
             updateAmountPreview();
             syncAllCards();
             applyMemberFilters();

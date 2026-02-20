@@ -15,6 +15,7 @@
 
     $membersMenuOpen = request()->routeIs('admin.members.*');
     $editorsMenuOpen = request()->routeIs('admin.editors.*');
+    $chitsMenuOpen = request()->routeIs('admin.chits.index') || request()->routeIs('admin.chits.show') || request()->routeIs('admin.chits.members.*');
     $cssVersion = file_exists(public_path('niceadmin/assets/css/goud-custom.css'))
         ? filemtime(public_path('niceadmin/assets/css/goud-custom.css'))
         : time();
@@ -147,7 +148,7 @@
 
             @if ($isAdmin)
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('admin.chits.index') ? '' : 'collapsed' }}" href="{{ route('admin.chits.index') }}">
+                    <a class="nav-link {{ $chitsMenuOpen ? '' : 'collapsed' }}" href="{{ route('admin.chits.index') }}">
                         <i class="bi bi-journal-text"></i>
                         <span>Chits</span>
                     </a>

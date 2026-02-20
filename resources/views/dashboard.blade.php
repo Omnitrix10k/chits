@@ -6,58 +6,89 @@
     $currentUser = auth()->user();
     $isAdmin = $currentUser->role === User::ROLE_ADMIN;
     $roleLabel = $currentUser->role === User::ROLE_USER ? 'Member' : ucfirst($currentUser->role);
-
-    $formattedRevenue = '$'.number_format((float) ($totalRevenue ?? 0), 2);
-
-    $membersTrend = [
-        max((int) $totalMembers - 8, 0),
-        max((int) $totalMembers - 5, 0),
-        max((int) $totalMembers - 3, 0),
-        max((int) $totalMembers - 2, 0),
-        max((int) $totalMembers - 1, 0),
-        (int) $totalMembers,
-        (int) $totalMembers + 2,
+    $periodLabel = $dashboardPeriodLabel ?? 'This Month';
+    $periodOptions = $dashboardPeriodOptions ?? [
+        'this_month' => 'This Month',
+        'last_3_months' => 'Last 3 Months',
+        'this_year' => 'This Year',
     ];
+    $selectedPeriod = $dashboardPeriod ?? 'this_month';
+    $dashboardCssVersion = file_exists(public_path('css/dashboard-pro.css'))
+        ? filemtime(public_path('css/dashboard-pro.css'))
+        : time();
 
-    $editorsTrend = [
-        max((int) $totalEditors - 3, 0),
-        max((int) $totalEditors - 2, 0),
-        max((int) $totalEditors - 2, 0),
-        max((int) $totalEditors - 1, 0),
-        (int) $totalEditors,
-        (int) $totalEditors,
-        (int) $totalEditors + 1,
-    ];
+    $revenueAmount = (int) round((float) ($totalRevenue ?? 0));
+    $revenueAmountRaw = (string) $revenueAmount;
+    if (strlen($revenueAmountRaw) > 3) {
+        $revenueLastThree = substr($revenueAmountRaw, -3);
+        $revenueLeading = substr($revenueAmountRaw, 0, -3);
+        $revenueLeading = (string) preg_replace('/\B(?=(\d{2})+(?!\d))/', ',', $revenueLeading);
+        $formattedRevenue = $revenueLeading.','.$revenueLastThree;
+    } else {
+        $formattedRevenue = $revenueAmountRaw;
+    }
 
-    $chitsTrend = [
-        max((int) $totalChits - 5, 0),
-        max((int) $totalChits - 4, 0),
-        max((int) $totalChits - 2, 0),
-        max((int) $totalChits - 1, 0),
-        (int) $totalChits,
-        (int) $totalChits + 1,
-        (int) $totalChits + 2,
+    $kpiChartData = [
+        'Chits' => (int) $totalChits,
+        'Members' => (int) $totalMembers,
+        'Editors' => (int) $totalEditors,
+        'Revenue (Lakh ₹)' => round(((float) $totalRevenue) / 100000, 2),
     ];
 @endphp
 
 @section('title', __('Dashboard'))
 @section('header', __('Dashboard'))
 
+@push('styles')
+    <link href="{{ asset('css/dashboard-pro.css') }}?v={{ $dashboardCssVersion }}" rel="stylesheet">
+@endpush
+
 @section('content')
     <section class="section dashboard">
         @if ($isAdmin)
-            <div class="row">
+            <div class="row g-3">
+                <div class="col-12">
+                    <div class="card dashboard-toolbar-card">
+                        <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div>
+                                <h5 class="card-title mb-1">Performance Dashboard <span>| {{ $periodLabel }}</span></h5>
+                                <p class="small text-muted mb-0">All KPI cards and revenue use the selected period filter.</p>
+                            </div>
+                            <div class="filter">
+                                <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-funnel"></i></a>
+                                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                                    <li class="dropdown-header text-start">
+                                        <h6>Filter Period</h6>
+                                    </li>
+                                    @foreach ($periodOptions as $periodKey => $optionLabel)
+                                        <li>
+                                            <a class="dropdown-item @if ($selectedPeriod === $periodKey) active @endif" href="{{ route('dashboard', ['period' => $periodKey]) }}">
+                                                {{ $optionLabel }}
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="col-xxl-3 col-md-6">
-                    <div class="card info-card sales-card">
+                    <div class="card info-card kpi-card kpi-card-chits">
                         <div class="card-body">
-                            <h5 class="card-title">Total Chits <span>| Current</span></h5>
-                            <div class="d-flex align-items-center">
-                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                            <div class="kpi-head">
+                                <h5 class="kpi-title">Total Chits</h5>
+                                <span class="kpi-period">{{ $periodLabel }}</span>
+                            </div>
+                            <div class="d-flex align-items-center kpi-body">
+                                <div class="card-icon d-flex align-items-center justify-content-center">
                                     <i class="bi bi-grid"></i>
                                 </div>
-                                <div class="ps-3">
-                                    <h6>{{ $totalChits }}</h6>
-                                    <span class="text-success small pt-1 fw-bold">Active</span>
+                                <div class="ps-3 kpi-content">
+                                    <h6 class="kpi-value kpi-value-number">
+                                        <span class="kpi-amount">{{ number_format((int) $totalChits) }}</span>
+                                    </h6>
+                                    <span class="kpi-meta">Active Chits</span>
                                 </div>
                             </div>
                         </div>
@@ -65,16 +96,21 @@
                 </div>
 
                 <div class="col-xxl-3 col-md-6">
-                    <div class="card info-card customers-card">
+                    <div class="card info-card kpi-card kpi-card-members">
                         <div class="card-body">
-                            <h5 class="card-title">Total Members <span>| Current</span></h5>
-                            <div class="d-flex align-items-center">
-                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                            <div class="kpi-head">
+                                <h5 class="kpi-title">Total Members</h5>
+                                <span class="kpi-period">{{ $periodLabel }}</span>
+                            </div>
+                            <div class="d-flex align-items-center kpi-body">
+                                <div class="card-icon d-flex align-items-center justify-content-center">
                                     <i class="bi bi-people"></i>
                                 </div>
-                                <div class="ps-3">
-                                    <h6>{{ $totalMembers }}</h6>
-                                    <span class="text-success small pt-1 fw-bold">Growing</span>
+                                <div class="ps-3 kpi-content">
+                                    <h6 class="kpi-value kpi-value-number">
+                                        <span class="kpi-amount">{{ number_format((int) $totalMembers) }}</span>
+                                    </h6>
+                                    <span class="kpi-meta">Enrolled Members</span>
                                 </div>
                             </div>
                         </div>
@@ -82,16 +118,21 @@
                 </div>
 
                 <div class="col-xxl-3 col-md-6">
-                    <div class="card info-card revenue-card">
+                    <div class="card info-card kpi-card kpi-card-editors">
                         <div class="card-body">
-                            <h5 class="card-title">Total Editors <span>| Current</span></h5>
-                            <div class="d-flex align-items-center">
-                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                            <div class="kpi-head">
+                                <h5 class="kpi-title">Total Editors</h5>
+                                <span class="kpi-period">{{ $periodLabel }}</span>
+                            </div>
+                            <div class="d-flex align-items-center kpi-body">
+                                <div class="card-icon d-flex align-items-center justify-content-center">
                                     <i class="bi bi-person-badge"></i>
                                 </div>
-                                <div class="ps-3">
-                                    <h6>{{ $totalEditors }}</h6>
-                                    <span class="text-success small pt-1 fw-bold">Active</span>
+                                <div class="ps-3 kpi-content">
+                                    <h6 class="kpi-value kpi-value-number">
+                                        <span class="kpi-amount">{{ number_format((int) $totalEditors) }}</span>
+                                    </h6>
+                                    <span class="kpi-meta">Active Editors</span>
                                 </div>
                             </div>
                         </div>
@@ -99,82 +140,42 @@
                 </div>
 
                 <div class="col-xxl-3 col-md-6">
-                    <div class="card info-card revenue-card">
+                    <div class="card info-card kpi-card kpi-card-revenue">
                         <div class="card-body">
-                            <h5 class="card-title">Total Revenue <span>| Overall</span></h5>
-                            <div class="d-flex align-items-center">
-                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                    <i class="bi bi-currency-dollar"></i>
+                            <div class="kpi-head">
+                                <h5 class="kpi-title">Total Revenue</h5>
+                                <span class="kpi-period">{{ $periodLabel }}</span>
+                            </div>
+                            <div class="d-flex align-items-center kpi-body">
+                                <div class="card-icon d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-currency-rupee"></i>
                                 </div>
-                                <div class="ps-3">
-                                    <h6>{{ $formattedRevenue }}</h6>
-                                    <span class="text-primary small pt-1 fw-bold">Committee</span>
+                                <div class="ps-3 kpi-content">
+                                    <h6 class="kpi-value kpi-value-money">
+                                        <span class="kpi-currency">₹</span>
+                                        <span class="kpi-amount">{{ $formattedRevenue }}</span>
+                                    </h6>
+                                    <span class="kpi-meta">Revenue Collected</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-lg-8">
-                    <div class="card">
+                <div class="col-lg-6">
+                    <div class="card insight-card">
                         <div class="card-body">
-                            <h5 class="card-title">Reports <span>/Last 7 points</span></h5>
-                            <div id="reportsChart"></div>
+                            <h5 class="card-title">KPI Radar <span>| {{ $periodLabel }}</span></h5>
+                            <div id="kpiRadarChart" class="dashboard-chart"></div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-lg-4">
-                    <div class="card">
-                        <div class="card-body pb-0">
-                            <h5 class="card-title">Recent Activity <span>| Today</span></h5>
-
-                            <div class="activity">
-                                <div class="activity-item d-flex">
-                                    <div class="activite-label">32 min</div>
-                                    <i class='bi bi-circle-fill activity-badge text-success align-self-start'></i>
-                                    <div class="activity-content">New member profile approved by admin.</div>
-                                </div>
-
-                                <div class="activity-item d-flex">
-                                    <div class="activite-label">56 min</div>
-                                    <i class='bi bi-circle-fill activity-badge text-warning align-self-start'></i>
-                                    <div class="activity-content">Editor profile is pending verification.</div>
-                                </div>
-
-                                <div class="activity-item d-flex">
-                                    <div class="activite-label">2 hrs</div>
-                                    <i class='bi bi-circle-fill activity-badge text-primary align-self-start'></i>
-                                    <div class="activity-content">Chit cycle updated for Group A-12.</div>
-                                </div>
-
-                                <div class="activity-item d-flex">
-                                    <div class="activite-label">1 day</div>
-                                    <i class='bi bi-circle-fill activity-badge text-info align-self-start'></i>
-                                    <div class="activity-content">System log archive completed successfully.</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card">
+                <div class="col-lg-6">
+                    <div class="card insight-card">
                         <div class="card-body">
-                            <h5 class="card-title">Budget Split <span>| This Month</span></h5>
-
-                            <div class="progress mt-3" style="height: 10px;">
-                                <div class="progress-bar" role="progressbar" style="width: 64%" aria-valuenow="64" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                            <p class="small text-muted mt-2 mb-3">Operations 64%</p>
-
-                            <div class="progress" style="height: 10px;">
-                                <div class="progress-bar bg-success" role="progressbar" style="width: 48%" aria-valuenow="48" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                            <p class="small text-muted mt-2 mb-3">Reserve 48%</p>
-
-                            <div class="progress" style="height: 10px;">
-                                <div class="progress-bar bg-warning" role="progressbar" style="width: 39%" aria-valuenow="39" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                            <p class="small text-muted mt-2 mb-0">Member Welfare 39%</p>
+                            <h5 class="card-title">KPI Distribution <span>| {{ $periodLabel }}</span></h5>
+                            <div id="kpiPieChart" class="dashboard-chart"></div>
                         </div>
                     </div>
                 </div>
@@ -219,61 +220,122 @@
     @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                const chartElement = document.querySelector('#reportsChart');
-
-                if (!chartElement || typeof ApexCharts === 'undefined') {
+                if (typeof echarts === 'undefined') {
                     return;
                 }
 
-                new ApexCharts(chartElement, {
+                const radarElement = document.getElementById('kpiRadarChart');
+                const pieElement = document.getElementById('kpiPieChart');
+                if (!radarElement || !pieElement) {
+                    return;
+                }
+
+                const rawKpiData = @json($kpiChartData);
+                const kpiEntries = Object.entries(rawKpiData).map(([name, value]) => ({
+                    name,
+                    value: Number(value) || 0,
+                }));
+
+                const radarIndicators = kpiEntries.map((entry) => ({
+                    name: entry.name,
+                    max: Math.max(1, Math.ceil(entry.value * 1.25)),
+                }));
+
+                const radarChart = echarts.init(radarElement);
+                radarChart.setOption({
+                    color: ['#4154f1'],
+                    tooltip: {
+                        trigger: 'item',
+                    },
+                    radar: {
+                        indicator: radarIndicators,
+                        radius: '64%',
+                        splitNumber: 5,
+                        splitArea: {
+                            areaStyle: {
+                                color: ['#ffffff', '#f8faff'],
+                            },
+                        },
+                        axisLine: {
+                            lineStyle: {
+                                color: '#d7e2f5',
+                            },
+                        },
+                        splitLine: {
+                            lineStyle: {
+                                color: '#d7e2f5',
+                            },
+                        },
+                    },
                     series: [
                         {
-                            name: 'Members',
-                            data: @json($membersTrend),
-                        },
-                        {
-                            name: 'Editors',
-                            data: @json($editorsTrend),
-                        },
-                        {
-                            name: 'Chits',
-                            data: @json($chitsTrend),
+                            type: 'radar',
+                            data: [
+                                {
+                                    value: kpiEntries.map((entry) => entry.value),
+                                    name: 'KPI',
+                                    areaStyle: {
+                                        color: 'rgba(65, 84, 241, 0.18)',
+                                    },
+                                },
+                            ],
+                            symbol: 'circle',
+                            symbolSize: 6,
+                            lineStyle: {
+                                width: 2.4,
+                            },
+                            itemStyle: {
+                                color: '#4154f1',
+                            },
                         },
                     ],
-                    chart: {
-                        height: 350,
-                        type: 'area',
-                        toolbar: {
-                            show: false,
-                        },
-                    },
-                    markers: {
-                        size: 4,
-                    },
-                    colors: ['#4154f1', '#2eca6a', '#ff771d'],
-                    fill: {
-                        type: 'gradient',
-                        gradient: {
-                            shadeIntensity: 1,
-                            opacityFrom: 0.3,
-                            opacityTo: 0.4,
-                            stops: [0, 90, 100],
-                        },
-                    },
-                    dataLabels: {
-                        enabled: false,
-                    },
-                    stroke: {
-                        curve: 'smooth',
-                        width: 2,
-                    },
-                    xaxis: {
-                        categories: ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7'],
-                    },
+                });
+
+                const pieChart = echarts.init(pieElement);
+                const pieTotal = kpiEntries.reduce((sum, entry) => sum + entry.value, 0);
+                pieChart.setOption({
+                    color: ['#4154f1', '#2eca6a', '#ff771d', '#20c997'],
                     tooltip: {
-                        shared: true,
+                        trigger: 'item',
                     },
-                }).render();
+                    legend: {
+                        bottom: 0,
+                        left: 'center',
+                        textStyle: {
+                            color: '#4f5f78',
+                            fontSize: 12,
+                        },
+                    },
+                    series: [
+                        {
+                            name: 'KPI',
+                            type: 'pie',
+                            radius: ['44%', '72%'],
+                            avoidLabelOverlap: true,
+                            label: {
+                                show: true,
+                                formatter: '{b}',
+                                fontSize: 11,
+                            },
+                            emphasis: {
+                                label: {
+                                    show: true,
+                                    fontSize: 13,
+                                    fontWeight: 700,
+                                },
+                            },
+                            data: kpiEntries.map((entry) => ({
+                                value: pieTotal === 0 ? 0 : entry.value,
+                                name: entry.name,
+                            })),
+                        },
+                    ],
+                });
+
+                window.addEventListener('resize', function () {
+                    radarChart.resize();
+                    pieChart.resize();
+                });
             });
         </script>
     @endpush

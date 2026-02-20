@@ -36,6 +36,12 @@
             </div>
 
             <div>
+                <label for="referred_by_name" class="block text-sm font-medium text-gray-700">{{ __('Referred By (Optional)') }}</label>
+                <input id="referred_by_name" name="referred_by_name" type="text" value="{{ old('referred_by_name') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="{{ __('Enter referrer name') }}">
+                @error('referred_by_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
                 <label for="profile_image" class="block text-sm font-medium text-gray-700">{{ __('Profile Image (Optional)') }}</label>
                 <div class="mt-2 flex items-center gap-4">
                     <img src="{{ asset('images/default-avatar.svg') }}" alt="{{ __('Default profile image') }}" class="h-20 w-20 rounded-full border border-gray-200 object-cover">

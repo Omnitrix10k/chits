@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\Admin\ChitController;
+use App\Http\Controllers\Admin\ChitMemberController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\SystemLogController;
 use App\Http\Controllers\ProfileController;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
@@ -13,15 +15,51 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    $totalMembers = User::query()->where('role', User::ROLE_USER)->count();
-    $totalEditors = User::query()->where('role', User::ROLE_EDITOR)->count();
+Route::get('/dashboard', function (Request $request) {
+    $periodOptions = [
+        'this_month' => 'This Month',
+        'last_3_months' => 'Last 3 Months',
+        'this_year' => 'This Year',
+    ];
+
+    $dashboardPeriod = (string) $request->query('period', 'this_month');
+    if (! array_key_exists($dashboardPeriod, $periodOptions)) {
+        $dashboardPeriod = 'this_month';
+    }
+
+    $rangeStart = null;
+    $rangeEnd = now();
+
+    if ($dashboardPeriod === 'this_month') {
+        $rangeStart = now()->copy()->startOfMonth();
+    } elseif ($dashboardPeriod === 'last_3_months') {
+        $rangeStart = now()->copy()->subMonths(2)->startOfMonth();
+    } elseif ($dashboardPeriod === 'this_year') {
+        $rangeStart = now()->copy()->startOfYear();
+    }
+
+    $membersQuery = User::query()->where('role', User::ROLE_USER);
+    $editorsQuery = User::query()->where('role', User::ROLE_EDITOR);
+
+    if ($rangeStart) {
+        $membersQuery->whereBetween('created_at', [$rangeStart, $rangeEnd]);
+        $editorsQuery->whereBetween('created_at', [$rangeStart, $rangeEnd]);
+    }
+
+    $totalMembers = $membersQuery->count();
+    $totalEditors = $editorsQuery->count();
 
     $totalChits = 0;
     $totalRevenue = 0.0;
 
     if (Schema::hasTable('chits')) {
-        $totalChits = DB::table('chits')->count();
+        $chitsQuery = DB::table('chits');
+
+        if ($rangeStart && Schema::hasColumn('chits', 'created_at')) {
+            $chitsQuery->whereBetween('created_at', [$rangeStart, $rangeEnd]);
+        }
+
+        $totalChits = (clone $chitsQuery)->count();
 
         $revenueColumns = ['total_amount', 'amount', 'revenue'];
         $revenueColumn = collect($revenueColumns)->first(
@@ -29,7 +67,7 @@ Route::get('/dashboard', function () {
         );
 
         if ($revenueColumn) {
-            $totalRevenue = (float) DB::table('chits')->sum($revenueColumn);
+            $totalRevenue = (float) (clone $chitsQuery)->sum($revenueColumn);
         }
     }
 
@@ -38,6 +76,9 @@ Route::get('/dashboard', function () {
         'totalEditors' => $totalEditors,
         'totalChits' => $totalChits,
         'totalRevenue' => $totalRevenue,
+        'dashboardPeriod' => $dashboardPeriod,
+        'dashboardPeriodLabel' => $periodOptions[$dashboardPeriod],
+        'dashboardPeriodOptions' => $periodOptions,
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -51,6 +92,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/chits', [ChitController::class, 'index'])->name('chits.index');
     Route::get('/chits/create', [ChitController::class, 'create'])->name('chits.create');
     Route::post('/chits', [ChitController::class, 'store'])->name('chits.store');
+    Route::get('/chits/{chit}/edit', [ChitController::class, 'edit'])->name('chits.edit');
+    Route::patch('/chits/{chit}', [ChitController::class, 'update'])->name('chits.update');
+    Route::delete('/chits/{chit}', [ChitController::class, 'destroy'])->name('chits.destroy');
+    Route::get('/chits/{chit}', [ChitController::class, 'show'])->name('chits.show');
+    Route::get('/chits/{chit}/members/{slot}', [ChitMemberController::class, 'show'])->name('chits.members.show');
+    Route::patch('/chits/{chit}/members/{slot}', [ChitMemberController::class, 'update'])->name('chits.members.update');
+    Route::post('/chits/{chit}/members/{slot}/payments', [ChitMemberController::class, 'storePayment'])->name('chits.members.payments.store');
+    Route::delete('/chits/{chit}/members/{slot}', [ChitMemberController::class, 'destroy'])->name('chits.members.destroy');
     Route::get('/system-logs', [SystemLogController::class, 'index'])->name('system-logs.index');
 
     Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');

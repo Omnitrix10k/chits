@@ -35,6 +35,7 @@ class User extends Authenticatable
         'email',
         'mobile_number',
         'primary_phone',
+        'referred_by_name',
         'address',
         'government_id_path',
         'profile_image_path',

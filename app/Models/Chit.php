@@ -11,6 +11,7 @@ class Chit extends Model
 {
     use HasFactory;
 
+    public const DEFAULT_MEMBER_LIMIT = 20;
     public const MEMBER_LIMIT = 20;
     public const MAX_REPEAT_PER_MEMBER = 9;
 
@@ -32,10 +33,12 @@ class Chit extends Model
     ];
 
     protected $fillable = [
+        'chit_name',
         'plan_code',
         'chit_type_code',
         'total_amount',
         'duration_months',
+        'current_month',
         'member_limit',
         'monthly_amount',
         'total_slots_assigned',
@@ -46,10 +49,12 @@ class Chit extends Model
     protected function casts(): array
     {
         return [
+            'chit_name' => 'string',
             'plan_code' => 'integer',
             'chit_type_code' => 'integer',
             'total_amount' => 'integer',
             'duration_months' => 'integer',
+            'current_month' => 'integer',
             'member_limit' => 'integer',
             'monthly_amount' => 'integer',
             'total_slots_assigned' => 'integer',
@@ -77,6 +82,55 @@ class Chit extends Model
         foreach (self::PLAN_MAP as $code => $item) {
             if ($item['key'] === $key) {
                 return $code;
+            }
+        }
+
+        return null;
+    }
+
+    public static function planCodeFromAmount(int $amount): int
+    {
+        $normalizedAmount = max(0, $amount);
+        $planCodes = array_keys(self::PLAN_MAP);
+        if ($planCodes === []) {
+            return 1;
+        }
+
+        $closestCode = (int) $planCodes[0];
+        $closestDistance = abs($normalizedAmount - (int) (self::PLAN_MAP[$closestCode]['amount'] ?? 0));
+
+        foreach (self::PLAN_MAP as $code => $plan) {
+            $distance = abs($normalizedAmount - (int) ($plan['amount'] ?? 0));
+            if ($distance < $closestDistance) {
+                $closestDistance = $distance;
+                $closestCode = (int) $code;
+            }
+        }
+
+        return $closestCode;
+    }
+
+    /**
+     * @return array{code:int,key:string,label:string,amount:int}|null
+     */
+    public static function resolvePlanInput(string $input): ?array
+    {
+        $normalizedInput = self::normalizePlanInput($input);
+        if ($normalizedInput === '') {
+            return null;
+        }
+
+        foreach (self::PLAN_MAP as $code => $item) {
+            if (
+                $normalizedInput === self::normalizePlanInput($item['key'])
+                || $normalizedInput === self::normalizePlanInput($item['label'])
+            ) {
+                return [
+                    'code' => $code,
+                    'key' => $item['key'],
+                    'label' => $item['label'],
+                    'amount' => $item['amount'],
+                ];
             }
         }
 
@@ -122,6 +176,16 @@ class Chit extends Model
         return $this->hasMany(ChitMember::class);
     }
 
+    public function memberAssignments(): HasMany
+    {
+        return $this->hasMany(ChitMemberSlot::class);
+    }
+
+    public function memberPayments(): HasMany
+    {
+        return $this->hasMany(ChitMemberPayment::class);
+    }
+
     public function getPlanKeyAttribute(): ?string
     {
         return self::planFromCode($this->plan_code)['key'] ?? null;
@@ -129,6 +193,11 @@ class Chit extends Model
 
     public function getPlanLabelAttribute(): string
     {
+        $customName = trim((string) $this->chit_name);
+        if ($customName !== '') {
+            return $customName;
+        }
+
         return self::planFromCode($this->plan_code)['label'] ?? 'Unknown Plan';
     }
 
@@ -145,5 +214,37 @@ class Chit extends Model
     public function getStatusLabelAttribute(): string
     {
         return self::STATUS_MAP[$this->status_code]['label'] ?? 'Unknown';
+    }
+
+    public function resolvedCurrentMonth(): int
+    {
+        $durationMonths = max(1, (int) $this->duration_months);
+        $currentMonth = max(1, (int) ($this->current_month ?: 1));
+
+        return min($currentMonth, $durationMonths);
+    }
+
+    public static function calculateMonthlyAmount(int $totalAmount, int $durationMonths, int $memberLimit): int
+    {
+        // Duration is used for month schedule; member installment is based on total value / members.
+        $durationMonths = max(1, $durationMonths);
+
+        $normalizedTotal = max(0, $totalAmount);
+        $normalizedMembers = max(1, $memberLimit);
+        if ($durationMonths < 1) {
+            return 0;
+        }
+
+        return (int) round($normalizedTotal / $normalizedMembers);
+    }
+
+    private static function normalizePlanInput(string $value): string
+    {
+        $value = strtolower(trim($value));
+        if ($value === '') {
+            return '';
+        }
+
+        return str_replace(['-', '_'], ' ', preg_replace('/\s+/', ' ', $value) ?? $value);
     }
 }
