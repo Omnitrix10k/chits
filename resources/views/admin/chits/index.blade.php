@@ -5,9 +5,12 @@
 @section('header', __('Chits'))
 
 @php
+    use App\Models\User;
+
     $chitsCssVersion = file_exists(public_path('css/chits.css'))
         ? filemtime(public_path('css/chits.css'))
         : time();
+    $canManageMutations = auth()->user()?->role === User::ROLE_ADMIN;
 @endphp
 
 @push('styles')
@@ -21,6 +24,12 @@
         </div>
     @endif
 
+    @if ($canManageMutations && $errors->deleteChit->any())
+        <div class="alert alert-danger" role="alert">
+            Please enter the correct admin password to delete a chit.
+        </div>
+    @endif
+
     <section class="section chits-page">
         <div class="row g-3 mb-3">
             <div class="col-12">
@@ -30,31 +39,18 @@
                             <div class="chit-overview-copy">
                                 <p class="chit-overview-kicker mb-1">Chit Management</p>
                                 <h5 class="chit-overview-title mb-1">All Chits</h5>
-                                <p class="chit-overview-subtitle mb-0">
-                                    Create new chits, filter active cycles, and monitor slot utilization from a single workspace.
-                                </p>
                             </div>
-                            <a href="{{ route('admin.chits.create') }}" class="btn btn-primary chit-overview-cta">
-                                <i class="bi bi-plus-circle me-1"></i>Create Chit
-                            </a>
+                            @if ($canManageMutations)
+                                <a href="{{ route('admin.chits.create') }}" class="btn btn-primary chit-overview-cta">
+                                    <i class="bi bi-plus-circle me-1"></i>Create Chit
+                                </a>
+                            @endif
                         </div>
 
-                        <div class="chit-overview-metrics">
+                        <div class="chit-overview-metrics chit-overview-metrics-single">
                             <div class="chit-overview-metric">
                                 <span class="metric-label">Total Chits</span>
                                 <strong class="metric-value">{{ $totalChits }}</strong>
-                            </div>
-                            <div class="chit-overview-metric">
-                                <span class="metric-label">Visible Results</span>
-                                <strong class="metric-value">{{ $chits->total() }}</strong>
-                            </div>
-                            <div class="chit-overview-metric">
-                                <span class="metric-label">Slot Rule</span>
-                                <strong class="metric-value">Dynamic Members</strong>
-                            </div>
-                            <div class="chit-overview-metric">
-                                <span class="metric-label">Repeat Limit</span>
-                                <strong class="metric-value">9 per Member</strong>
                             </div>
                         </div>
 
@@ -99,20 +95,6 @@
                             </div>
                         </form>
 
-                        <div class="chit-overview-rules">
-                            <div class="chit-rule-item">
-                                <i class="bi bi-people"></i>
-                                <span>Each chit must have exactly the member slot count configured at creation.</span>
-                            </div>
-                            <div class="chit-rule-item">
-                                <i class="bi bi-arrow-repeat"></i>
-                                <span>A member can be repeated at most 9 times in a single chit.</span>
-                            </div>
-                            <div class="chit-rule-item">
-                                <i class="bi bi-calculator"></i>
-                                <span>Monthly amount is auto-calculated as total value divided by total members.</span>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -192,13 +174,81 @@
                                     <strong class="chit-meta-value">{{ $chit->created_at->format('d M Y') }}</strong>
                                 </div>
                                 <div class="chit-card-open-row">
-                                    <span class="chit-card-open-chip">
-                                        <i class="bi bi-box-arrow-up-right me-1"></i>Open Chit
-                                    </span>
+                                    <a
+                                        href="{{ route('admin.chits.show', $chit) }}"
+                                        class="chit-card-action-btn chit-card-action-open"
+                                        aria-label="Open chit"
+                                    >
+                                        <i class="bi bi-box-arrow-up-right"></i>
+                                        <span>Open</span>
+                                    </a>
+                                    @if ($canManageMutations)
+                                        <a
+                                            href="{{ route('admin.chits.edit', $chit) }}"
+                                            class="chit-card-action-btn chit-card-action-edit"
+                                            aria-label="Edit chit"
+                                        >
+                                            <i class="bi bi-pencil-square"></i>
+                                            <span>Edit</span>
+                                        </a>
+                                        <button
+                                            type="button"
+                                            class="chit-card-action-btn chit-card-action-delete"
+                                            aria-label="Delete chit"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteChitModal{{ $chit->id }}"
+                                        >
+                                            <i class="bi bi-trash"></i>
+                                            <span>Delete</span>
+                                        </button>
+                                    @endif
                                 </div>
                             </div>
                         </div>
                     </article>
+
+                    @if ($canManageMutations)
+                        @php
+                            $isDeleteErrorForChit = (int) old('delete_chit_id') === (int) $chit->id && $errors->deleteChit->has('password');
+                        @endphp
+
+                        <div class="modal fade" id="deleteChitModal{{ $chit->id }}" tabindex="-1" aria-labelledby="deleteChitLabel{{ $chit->id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <form method="POST" action="{{ route('admin.chits.destroy', $chit) }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <input type="hidden" name="delete_chit_id" value="{{ $chit->id }}">
+
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="deleteChitLabel{{ $chit->id }}">Delete {{ $chit->chit_name }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <p class="mb-3 text-muted">Enter your admin password to confirm deletion. This action permanently removes the chit and related records.</p>
+                                            <label for="deleteChitPassword{{ $chit->id }}" class="form-label">Admin Password</label>
+                                            <input
+                                                id="deleteChitPassword{{ $chit->id }}"
+                                                type="password"
+                                                name="password"
+                                                class="form-control @if ($isDeleteErrorForChit) is-invalid @endif"
+                                                required
+                                            >
+                                            @if ($isDeleteErrorForChit)
+                                                <div class="invalid-feedback d-block">{{ $errors->deleteChit->first('password') }}</div>
+                                            @endif
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-danger">Delete Chit</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             @empty
                 <div class="col-12">
@@ -246,6 +296,19 @@
                     }
                 });
             });
+
+            const canManageMutations = @json($canManageMutations);
+            if (!canManageMutations) {
+                return;
+            }
+
+            const failedDeleteChitId = @json((int) old('delete_chit_id'));
+            if (failedDeleteChitId > 0) {
+                const failedModal = document.getElementById(`deleteChitModal${failedDeleteChitId}`);
+                if (failedModal && window.bootstrap?.Modal) {
+                    window.bootstrap.Modal.getOrCreateInstance(failedModal).show();
+                }
+            }
         });
     </script>
 @endpush

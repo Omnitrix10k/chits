@@ -72,16 +72,16 @@
             </div>
 
             <div class="rounded-md border border-gray-200 p-4">
-                <h3 class="text-sm font-semibold text-gray-800">{{ __('Surety Details') }}</h3>
+                <h3 class="text-sm font-semibold text-gray-800">{{ __('Surety Details (Optional)') }}</h3>
                 <div class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label for="surety_name" class="block text-sm font-medium text-gray-700">{{ __('Surety Name') }} *</label>
-                        <input id="surety_name" name="surety_name" type="text" value="{{ old('surety_name', $member->family_name) }}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                        <label for="surety_name" class="block text-sm font-medium text-gray-700">{{ __('Surety Name') }}</label>
+                        <input id="surety_name" name="surety_name" type="text" value="{{ old('surety_name', $member->family_name) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                         @error('surety_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label for="surety_relation" class="block text-sm font-medium text-gray-700">{{ __('Relation') }} *</label>
-                        <select id="surety_relation" name="surety_relation" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                        <label for="surety_relation" class="block text-sm font-medium text-gray-700">{{ __('Relation') }}</label>
+                        <select id="surety_relation" name="surety_relation" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                             <option value="">{{ __('Select relation') }}</option>
                             @foreach ($relations as $relation)
                                 <option value="{{ $relation }}" @selected(old('surety_relation', $member->family_relation) === $relation)>{{ ucfirst($relation) }}</option>
@@ -90,30 +90,30 @@
                         @error('surety_relation') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label for="surety_phone_number" class="block text-sm font-medium text-gray-700">{{ __('Surety Phone Number') }} *</label>
-                        <input id="surety_phone_number" name="surety_phone_number" type="text" value="{{ old('surety_phone_number', $member->family_phone_number) }}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                        <label for="surety_phone_number" class="block text-sm font-medium text-gray-700">{{ __('Surety Phone Number') }}</label>
+                        <input id="surety_phone_number" name="surety_phone_number" type="text" value="{{ old('surety_phone_number', $member->family_phone_number) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                         @error('surety_phone_number') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label for="surety_government_id" class="block text-sm font-medium text-gray-700">{{ __('Surety Govt ID') }} *</label>
-                        <input id="surety_government_id" name="surety_government_id" type="text" value="{{ old('surety_government_id', $member->family_government_id) }}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                        <label for="surety_government_id" class="block text-sm font-medium text-gray-700">{{ __('Surety Govt ID') }}</label>
+                        <input id="surety_government_id" name="surety_government_id" type="text" value="{{ old('surety_government_id', $member->family_government_id) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                         @error('surety_government_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label for="surety_bank_name" class="block text-sm font-medium text-gray-700">{{ __('Bank Name') }} *</label>
-                        <input id="surety_bank_name" name="surety_bank_name" type="text" value="{{ old('surety_bank_name', $member->family_bank_name) }}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                        <label for="surety_bank_name" class="block text-sm font-medium text-gray-700">{{ __('Bank Name') }}</label>
+                        <input id="surety_bank_name" name="surety_bank_name" type="text" value="{{ old('surety_bank_name', $member->family_bank_name) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                         @error('surety_bank_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label for="surety_cheque_book_number" class="block text-sm font-medium text-gray-700">{{ __('Cheque Book Number') }} *</label>
-                        <input id="surety_cheque_book_number" name="surety_cheque_book_number" type="text" value="{{ old('surety_cheque_book_number', $member->family_cheque_number) }}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                        <label for="surety_cheque_book_number" class="block text-sm font-medium text-gray-700">{{ __('Cheque Book Number') }}</label>
+                        <input id="surety_cheque_book_number" name="surety_cheque_book_number" type="text" value="{{ old('surety_cheque_book_number', $member->family_cheque_number) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                         @error('surety_cheque_book_number') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
 
                 <div class="mt-4">
-                    <label for="surety_address" class="block text-sm font-medium text-gray-700">{{ __('Surety Address') }} *</label>
-                    <textarea id="surety_address" name="surety_address" rows="2" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">{{ old('surety_address', $member->family_address) }}</textarea>
+                    <label for="surety_address" class="block text-sm font-medium text-gray-700">{{ __('Surety Address') }}</label>
+                    <textarea id="surety_address" name="surety_address" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">{{ old('surety_address', $member->family_address) }}</textarea>
                     @error('surety_address') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
             </div>

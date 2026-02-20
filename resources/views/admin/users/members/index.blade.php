@@ -5,9 +5,12 @@
 @section('header', __('Members'))
 
 @php
+    use App\Models\User;
+
     $membersCssVersion = file_exists(public_path('niceadmin/assets/css/goud-members.css'))
         ? filemtime(public_path('niceadmin/assets/css/goud-members.css'))
         : time();
+    $canManageMutations = auth()->user()?->role === User::ROLE_ADMIN;
 @endphp
 
 @push('styles')
@@ -35,9 +38,11 @@
                                 @endif
                             </p>
                         </div>
-                        <a href="{{ route('admin.members.create') }}" class="btn btn-primary">
-                            <i class="bi bi-plus-circle me-1"></i>Add Member
-                        </a>
+                        @if ($canManageMutations)
+                            <a href="{{ route('admin.members.create') }}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-1"></i>Add Member
+                            </a>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -139,29 +144,31 @@
                             </div>
                         </div>
 
-                        <div class="member-actions">
-                            <a
-                                href="{{ route('admin.members.edit', $member) }}"
-                                class="member-icon-btn"
-                                title="{{ __('Edit Member') }}"
-                                aria-label="{{ __('Edit Member') }}"
-                            >
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-
-                            <form method="POST" action="{{ route('admin.members.destroy', $member) }}" onsubmit="return confirm('{{ __('Are you sure?') }}')">
-                                @csrf
-                                @method('DELETE')
-                                <button
-                                    type="submit"
-                                    class="member-icon-btn member-delete"
-                                    title="{{ __('Delete Member') }}"
-                                    aria-label="{{ __('Delete Member') }}"
+                        @if ($canManageMutations)
+                            <div class="member-actions">
+                                <a
+                                    href="{{ route('admin.members.edit', $member) }}"
+                                    class="member-icon-btn"
+                                    title="{{ __('Edit Member') }}"
+                                    aria-label="{{ __('Edit Member') }}"
                                 >
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </div>
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+
+                                <form method="POST" action="{{ route('admin.members.destroy', $member) }}" onsubmit="return confirm('{{ __('Are you sure?') }}')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button
+                                        type="submit"
+                                        class="member-icon-btn member-delete"
+                                        title="{{ __('Delete Member') }}"
+                                        aria-label="{{ __('Delete Member') }}"
+                                    >
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        @endif
                     </div>
                 </article>
             @empty

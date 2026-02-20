@@ -1,23 +1,34 @@
 @extends('layouts.app-custom')
 
-@section('title', __('Create Chit'))
-
-@section('header', __('Create Chit'))
-
 @php
+    $editing = (bool) ($isEdit ?? false) && $chit;
+    $formTitle = $editing ? 'Edit Chit' : 'Create Chit';
+    $formAction = $editing ? route('admin.chits.update', $chit) : route('admin.chits.store');
+    $submitLabel = $editing ? 'Update Chit' : 'Create Chit';
+    $errorHeadline = $editing ? 'Unable to update chit.' : 'Unable to create chit.';
+    $heroTitle = $editing ? 'Edit Chit' : 'Create New Chit';
+    $heroSubtitle = $editing
+        ? 'Update chit details, adjust member capacity, and reassign slots while keeping validation intact.'
+        : 'Configure chit details, define member capacity, and assign slots with validation in a single guided flow.';
+    $draftStorageKey = $editing ? 'goud_chit_step1_edit_'.$chit->id : 'goud_chit_step1_create_draft';
+    $shouldOpenStepTwo = $errors->has('selected_members');
+
     $chitsCssVersion = file_exists(public_path('css/chits.css'))
         ? filemtime(public_path('css/chits.css'))
         : time();
 
-    $selectedPlanText = trim((string) old('chit_name', ''));
-
-    $selectedType = old('chit_type', 'auction');
-    $durationPreview = max((int) old('duration_months', 20), 1);
+    $selectedPlanText = trim((string) old('chit_name', $editing ? $chit->chit_name : ''));
+    $selectedType = old('chit_type', $editing ? ($chit->type_key ?: 'auction') : 'auction');
+    $durationPreview = max((int) old('duration_months', $editing ? $chit->duration_months : 20), 1);
     $memberLimitPreview = max((int) old('member_limit', $memberLimit), 1);
-    $totalAmountPreview = max((int) old('total_amount', 100000), 1);
+    $totalAmountPreview = max((int) old('total_amount', $editing ? $chit->total_amount : 100000), 1);
     $monthlyAmountPreview = \App\Models\Chit::calculateMonthlyAmount((int) $totalAmountPreview, $durationPreview, $memberLimitPreview);
     $selectedMemberSlotsCount = array_sum($selectedMembers);
 @endphp
+
+@section('title', __($formTitle))
+
+@section('header', __($formTitle))
 
 @push('styles')
     <link href="{{ asset('css/chits.css') }}?v={{ $chitsCssVersion }}" rel="stylesheet">
@@ -30,9 +41,9 @@
                 <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
                     <div>
                         <p class="chit-overview-kicker mb-1">Chit Workflow</p>
-                        <h4 class="chit-overview-title mb-1">Create New Chit</h4>
+                        <h4 class="chit-overview-title mb-1">{{ $heroTitle }}</h4>
                         <p class="chit-overview-subtitle mb-0">
-                            Configure chit details, define member capacity, and assign slots with validation in a single guided flow.
+                            {{ $heroSubtitle }}
                         </p>
                     </div>
                     <a href="{{ route('admin.chits.index') }}" class="btn btn-outline-secondary chit-overview-cta">
@@ -78,7 +89,7 @@
 
         @if ($errors->any())
             <div class="alert alert-danger mt-3" role="alert">
-                <strong>Unable to create chit.</strong>
+                <strong>{{ $errorHeadline }}</strong>
                 <ul class="mb-0 mt-2">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -87,8 +98,11 @@
             </div>
         @endif
 
-        <form id="chitCreateForm" method="POST" action="{{ route('admin.chits.store') }}" class="mt-3">
+        <form id="chitCreateForm" method="POST" action="{{ $formAction }}" class="mt-3">
             @csrf
+            @if ($editing)
+                @method('PATCH')
+            @endif
             <input
                 type="hidden"
                 name="selected_members"
@@ -97,7 +111,7 @@
             >
 
             <div id="slotValidationAlert" class="alert alert-danger d-none" role="alert">
-                You must assign exactly <strong id="slotValidationLimit">{{ $memberLimitPreview }}</strong> member slots before creating the chit.
+                You must assign exactly <strong id="slotValidationLimit">{{ $memberLimitPreview }}</strong> member slots before {{ $editing ? 'updating' : 'creating' }} the chit.
             </div>
 
             <div id="chitDetailsStep" class="card chit-step-card">
@@ -298,7 +312,7 @@
                             Back To Chit Details
                         </button>
                         <button type="submit" class="btn btn-primary">
-                            Create Chit
+                            {{ $submitLabel }}
                         </button>
                     </div>
                 </div>
@@ -340,8 +354,9 @@
             const memberRows = Array.from(document.querySelectorAll('.member-pick-col'));
             const memberCards = Array.from(document.querySelectorAll('.member-pick-card'));
             const clickTimers = new Map();
-            const draftKey = 'goud_chit_step1_draft';
-            const hasOldInput = {{ old('chit_name') || old('chit_type') || old('duration_months') || old('total_amount') || old('member_limit') ? 'true' : 'false' }};
+            const draftKey = @json($draftStorageKey);
+            const hasOldInput = {{ old('chit_name') || old('chit_type') || old('duration_months') || old('total_amount') || old('member_limit') || old('selected_members') ? 'true' : 'false' }};
+            const shouldOpenMemberStep = {{ $shouldOpenStepTwo ? 'true' : 'false' }};
 
             let selectedCounts = {};
             try {
@@ -644,7 +659,7 @@
             updateAmountPreview();
             syncAllCards();
             applyMemberFilters();
-            if ({{ $selectedMemberSlotsCount }} > 0) {
+            if (shouldOpenMemberStep) {
                 showStep(2);
             } else {
                 showStep(1);

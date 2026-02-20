@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 class Chit extends Model
 {
@@ -186,6 +187,11 @@ class Chit extends Model
         return $this->hasMany(ChitMemberPayment::class);
     }
 
+    public function months(): HasMany
+    {
+        return $this->hasMany(ChitMonth::class);
+    }
+
     public function getPlanKeyAttribute(): ?string
     {
         return self::planFromCode($this->plan_code)['key'] ?? null;
@@ -236,6 +242,54 @@ class Chit extends Model
         }
 
         return (int) round($normalizedTotal / $normalizedMembers);
+    }
+
+    /**
+     * @return Collection<int, ChitMonth>
+     */
+    public function ensureMonthTimeline(): Collection
+    {
+        $durationMonths = max(1, (int) $this->duration_months);
+        $existing = $this->months()
+            ->orderBy('month_number')
+            ->get()
+            ->keyBy(static fn (ChitMonth $month): int => (int) $month->month_number);
+
+        $missingRows = [];
+
+        for ($monthNumber = 1; $monthNumber <= $durationMonths; $monthNumber++) {
+            if ($existing->has($monthNumber)) {
+                continue;
+            }
+
+            $missingRows[] = [
+                'chit_id' => $this->id,
+                'month_number' => $monthNumber,
+                'status_code' => ChitMonth::STATUS_PENDING,
+                'initialized_at' => null,
+                'auction_amount' => null,
+                'auction_winner_slot_id' => null,
+                'auction_recorded_at' => null,
+                'closed_at' => null,
+            ];
+        }
+
+        if ($missingRows !== []) {
+            ChitMonth::query()->insert($missingRows);
+        }
+
+        if ($existing->count() > $durationMonths) {
+            $monthIdsToDelete = $existing
+                ->filter(static fn (ChitMonth $month): bool => (int) $month->month_number > $durationMonths)
+                ->pluck('id')
+                ->all();
+
+            if ($monthIdsToDelete !== []) {
+                ChitMonth::query()->whereIn('id', $monthIdsToDelete)->delete();
+            }
+        }
+
+        return $this->months()->orderBy('month_number')->get();
     }
 
     private static function normalizePlanInput(string $value): string

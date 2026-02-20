@@ -20,7 +20,7 @@ class ChitMemberController extends Controller
         $this->assertSlotBelongsToChit($chit, $slot);
 
         $slot->load([
-            'user:id,name,first_name,last_name,email,mobile_number,primary_phone,address,profile_image_path',
+            'user:id,name,first_name,last_name,email,mobile_number,primary_phone,address,profile_image_path,referred_by_name',
             'payments' => static function ($query): void {
                 $query->orderBy('month_number');
             },
@@ -80,7 +80,6 @@ class ChitMemberController extends Controller
             'payment_status' => ['required', Rule::in($statusKeys)],
             'paid_amount' => ['required', 'integer', 'min:0', 'max:999999999'],
             'mark_paid' => ['nullable', 'boolean'],
-            'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
         $monthNumber = (int) $validated['month_number'];
@@ -126,7 +125,7 @@ class ChitMemberController extends Controller
                 'is_paid' => $isPaid,
                 'paid_at' => $isPaid ? now() : null,
                 'recorded_by' => $request->user()?->id,
-                'notes' => $this->normalizeNullableString($validated['notes'] ?? null),
+                'notes' => null,
             ]
         );
 
@@ -193,8 +192,7 @@ class ChitMemberController extends Controller
      *     extra_paid_amount:int,
      *     status_key:string,
      *     status_label:string,
-     *     is_paid:bool,
-     *     notes:?string
+     *     is_paid:bool
      * }>
      */
     private function buildPaymentHistory(Chit $chit, ChitMemberSlot $slot, int $currentMonth): \Illuminate\Support\Collection
@@ -221,7 +219,6 @@ class ChitMemberController extends Controller
                     'status_key' => $status['key'],
                     'status_label' => $status['label'],
                     'is_paid' => (bool) $payment->is_paid,
-                    'notes' => $payment->notes ?: null,
                 ];
             });
     }
@@ -235,8 +232,7 @@ class ChitMemberController extends Controller
      *     extra_paid_amount:int,
      *     status_key:string,
      *     status_label:string,
-     *     is_paid:bool,
-     *     notes:?string
+     *     is_paid:bool
      * }
      */
     private function defaultSnapshot(int $monthNumber, int $expectedAmount): array
@@ -250,7 +246,6 @@ class ChitMemberController extends Controller
             'status_key' => 'not_paid',
             'status_label' => 'Not Paid',
             'is_paid' => false,
-            'notes' => null,
         ];
     }
 

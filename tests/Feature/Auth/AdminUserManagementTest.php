@@ -53,6 +53,29 @@ it('allows admin to create a member with surety details and government id pdf', 
     Storage::disk('local')->assertExists($member->government_id_path);
 });
 
+it('allows admin to create a member without surety details', function () {
+    $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+    $response = $this->actingAs($admin)->post('/admin/members', [
+        'first_name' => 'Member',
+        'last_name' => 'NoSurety',
+        'email' => 'member-nosurety@example.com',
+        'mobile_number' => '+15555550999',
+        'password' => 'Password123!',
+        'password_confirmation' => 'Password123!',
+    ]);
+
+    $response->assertRedirect('/admin/members');
+
+    $member = User::query()->where('email', 'member-nosurety@example.com')->first();
+
+    expect($member)->not->toBeNull();
+    expect($member->family_name)->toBeNull();
+    expect($member->family_relation)->toBeNull();
+    expect($member->family_phone_number)->toBeNull();
+    expect($member->family_address)->toBeNull();
+});
+
 it('allows admin to create an editor with basic fields only', function () {
     $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
@@ -71,6 +94,25 @@ it('allows admin to create an editor with basic fields only', function () {
     expect($editor)->not->toBeNull();
     expect($editor->role)->toBe(User::ROLE_EDITOR);
     expect($editor->family_name)->toBeNull();
+});
+
+it('allows editor to view members but blocks editor-management and write actions', function () {
+    $editor = User::factory()->create(['role' => User::ROLE_EDITOR]);
+    $member = User::factory()->create([
+        'role' => User::ROLE_USER,
+        'name' => 'Sample Member',
+        'email' => 'sample-member@example.com',
+        'mobile_number' => '+15550001111',
+        'primary_phone' => '+15550001111',
+    ]);
+
+    $this->actingAs($editor)->get('/admin/members')->assertOk();
+    $this->actingAs($editor)->get('/admin/members/'.$member->id.'/government-id')->assertNotFound();
+
+    $this->actingAs($editor)->get('/admin/members/create')->assertForbidden();
+    $this->actingAs($editor)->delete('/admin/members/'.$member->id)->assertForbidden();
+    $this->actingAs($editor)->get('/admin/editors')->assertForbidden();
+    $this->actingAs($editor)->get('/admin/editors/create')->assertForbidden();
 });
 
 it('allows admin to update and delete members and editors', function () {

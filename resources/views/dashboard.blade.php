@@ -5,6 +5,8 @@
 
     $currentUser = auth()->user();
     $isAdmin = $currentUser->role === User::ROLE_ADMIN;
+    $isEditor = $currentUser->role === User::ROLE_EDITOR;
+    $hasManagementDashboard = $isAdmin || $isEditor;
     $roleLabel = $currentUser->role === User::ROLE_USER ? 'Member' : ucfirst($currentUser->role);
     $periodLabel = $dashboardPeriodLabel ?? 'This Month';
     $periodOptions = $dashboardPeriodOptions ?? [
@@ -13,6 +15,9 @@
         'this_year' => 'This Year',
     ];
     $selectedPeriod = $dashboardPeriod ?? 'this_month';
+    $searchQuery = trim((string) ($dashboardSearchQuery ?? request()->query('query', '')));
+    $dashboardMembers = $dashboardMembers ?? null;
+    $dashboardEditors = $dashboardEditors ?? null;
     $dashboardCssVersion = file_exists(public_path('css/dashboard-pro.css'))
         ? filemtime(public_path('css/dashboard-pro.css'))
         : time();
@@ -45,14 +50,19 @@
 
 @section('content')
     <section class="section dashboard">
-        @if ($isAdmin)
+        @if ($hasManagementDashboard)
             <div class="row g-3">
                 <div class="col-12">
                     <div class="card dashboard-toolbar-card">
                         <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
                             <div>
                                 <h5 class="card-title mb-1">Performance Dashboard <span>| {{ $periodLabel }}</span></h5>
-                                <p class="small text-muted mb-0">All KPI cards and revenue use the selected period filter.</p>
+                                <p class="small text-muted mb-0">
+                                    All KPI cards and revenue use the selected period filter.
+                                    @if ($searchQuery !== '')
+                                        Member/editor tables are filtered by: <strong>{{ $searchQuery }}</strong>.
+                                    @endif
+                                </p>
                             </div>
                             <div class="filter">
                                 <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-funnel"></i></a>
@@ -61,8 +71,14 @@
                                         <h6>Filter Period</h6>
                                     </li>
                                     @foreach ($periodOptions as $periodKey => $optionLabel)
+                                        @php
+                                            $periodLinkParams = ['period' => $periodKey];
+                                            if ($searchQuery !== '') {
+                                                $periodLinkParams['query'] = $searchQuery;
+                                            }
+                                        @endphp
                                         <li>
-                                            <a class="dropdown-item @if ($selectedPeriod === $periodKey) active @endif" href="{{ route('dashboard', ['period' => $periodKey]) }}">
+                                            <a class="dropdown-item @if ($selectedPeriod === $periodKey) active @endif" href="{{ route('dashboard', $periodLinkParams) }}">
                                                 {{ $optionLabel }}
                                             </a>
                                         </li>
@@ -179,6 +195,120 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="col-12 col-xxl-7">
+                    <div class="card dashboard-table-card">
+                        <div class="card-body">
+                            <div class="dashboard-table-head">
+                                <h5 class="card-title mb-0">Member Details <span>| {{ $periodLabel }}</span></h5>
+                                <span class="dashboard-table-badge">
+                                    {{ $dashboardMembers ? number_format((int) $dashboardMembers->total()) : 0 }} Results
+                                </span>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle dashboard-data-table mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Mobile</th>
+                                            <th>Referred By</th>
+                                            <th>Joined</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($dashboardMembers ?? [] as $member)
+                                            @php
+                                                $displayName = trim((string) ($member->name ?: trim(($member->first_name ?? '').' '.($member->last_name ?? ''))));
+                                                if ($displayName === '') {
+                                                    $displayName = 'Member #'.$member->id;
+                                                }
+                                            @endphp
+                                            <tr>
+                                                <td>{{ (int) (($dashboardMembers->firstItem() ?? 1) + $loop->index) }}</td>
+                                                <td>{{ $displayName }}</td>
+                                                <td>{{ $member->email ?: 'Not set' }}</td>
+                                                <td>{{ $member->mobile_number ?: $member->primary_phone ?: 'Not set' }}</td>
+                                                <td>{{ $member->referred_by_name ?: 'No one' }}</td>
+                                                <td>{{ optional($member->created_at)->format('d M Y') ?: '-' }}</td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="6" class="text-center text-muted py-4">
+                                                    No members found for the selected filters.
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            @if ($dashboardMembers && $dashboardMembers->hasPages())
+                                <div class="dashboard-table-pagination">
+                                    {{ $dashboardMembers->appends(['period' => $selectedPeriod, 'query' => $searchQuery])->links('pagination::bootstrap-5') }}
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-xxl-5">
+                    <div class="card dashboard-table-card">
+                        <div class="card-body">
+                            <div class="dashboard-table-head">
+                                <h5 class="card-title mb-0">Editor Details <span>| {{ $periodLabel }}</span></h5>
+                                <span class="dashboard-table-badge">
+                                    {{ $dashboardEditors ? number_format((int) $dashboardEditors->total()) : 0 }} Results
+                                </span>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle dashboard-data-table mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Mobile</th>
+                                            <th>Joined</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($dashboardEditors ?? [] as $editor)
+                                            @php
+                                                $editorName = trim((string) ($editor->name ?: trim(($editor->first_name ?? '').' '.($editor->last_name ?? ''))));
+                                                if ($editorName === '') {
+                                                    $editorName = 'Editor #'.$editor->id;
+                                                }
+                                            @endphp
+                                            <tr>
+                                                <td>{{ (int) (($dashboardEditors->firstItem() ?? 1) + $loop->index) }}</td>
+                                                <td>{{ $editorName }}</td>
+                                                <td>{{ $editor->email ?: 'Not set' }}</td>
+                                                <td>{{ $editor->mobile_number ?: $editor->primary_phone ?: 'Not set' }}</td>
+                                                <td>{{ optional($editor->created_at)->format('d M Y') ?: '-' }}</td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="5" class="text-center text-muted py-4">
+                                                    No editors found for the selected filters.
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            @if ($dashboardEditors && $dashboardEditors->hasPages())
+                                <div class="dashboard-table-pagination">
+                                    {{ $dashboardEditors->appends(['period' => $selectedPeriod, 'query' => $searchQuery])->links('pagination::bootstrap-5') }}
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
             </div>
         @else
             <div class="row">
@@ -216,7 +346,7 @@
     </section>
 @endsection
 
-@if ($isAdmin)
+@if ($hasManagementDashboard)
     @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function () {

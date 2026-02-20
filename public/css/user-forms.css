@@ -1,0 +1,181 @@
+.user-form-page .user-form-shell {
+  border: 1px solid #dfe7f5;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 18px 45px rgba(16, 42, 89, 0.08);
+  background: #f8fbff;
+}
+
+.user-form-page .user-form-header {
+  padding: 1.35rem 1.5rem;
+  border-bottom: 1px solid #dfe7f5;
+  background: linear-gradient(140deg, #ffffff 0%, #f1f6ff 100%);
+}
+
+.user-form-page .user-form-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0d2d64;
+}
+
+.user-form-page .user-form-subtitle {
+  margin: 0.4rem 0 0;
+  color: #5d6f8f;
+  font-size: 0.94rem;
+}
+
+.user-form-page .user-form-content {
+  padding: 1.5rem;
+}
+
+.user-form-page .user-form-section {
+  border: 1px solid #e0e8f7;
+  border-radius: 16px;
+  background: #ffffff;
+  padding: 1.2rem;
+}
+
+.user-form-page .user-form-section + .user-form-section {
+  margin-top: 1rem;
+}
+
+.user-form-page .user-form-section-title {
+  margin: 0 0 0.85rem;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #0d2d64;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.user-form-page .user-form-section-note {
+  margin: 0 0 0.85rem;
+  font-size: 0.84rem;
+  color: #5d6f8f;
+}
+
+.user-form-page .form-label {
+  margin-bottom: 0.35rem;
+  font-weight: 600;
+  color: #26416f;
+}
+
+.user-form-page .form-label .required-mark {
+  color: #de4452;
+}
+
+.user-form-page .form-label .optional-mark {
+  color: #7e8fab;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.user-form-page .form-control,
+.user-form-page .form-select,
+.user-form-page .form-control[type="file"] {
+  border-color: #d6e0f3;
+  border-radius: 12px;
+  color: #1f3662;
+  min-height: 44px;
+  box-shadow: none;
+}
+
+.user-form-page .form-control:focus,
+.user-form-page .form-select:focus {
+  border-color: #4f87f8;
+  box-shadow: 0 0 0 0.2rem rgba(79, 135, 248, 0.16);
+}
+
+.user-form-page textarea.form-control {
+  min-height: 92px;
+}
+
+.user-form-page .profile-upload-wrap {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px dashed #cedaf1;
+  border-radius: 14px;
+  background: #f9fbff;
+}
+
+.user-form-page .profile-preview {
+  width: 92px;
+  height: 92px;
+  border-radius: 14px;
+  object-fit: cover;
+  border: 1px solid #d6e0f3;
+  background: #eef4ff;
+}
+
+.user-form-page .profile-upload-note {
+  margin: 0.45rem 0 0;
+  font-size: 0.78rem;
+  color: #6980a7;
+}
+
+.user-form-page .user-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.user-form-page .btn-primary {
+  border: none;
+  border-radius: 12px;
+  min-width: 155px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #2f6de6 0%, #2f8cff 100%);
+  box-shadow: 0 10px 22px rgba(47, 109, 230, 0.24);
+}
+
+.user-form-page .btn-primary:hover {
+  background: linear-gradient(135deg, #255fce 0%, #257de6 100%);
+}
+
+.user-form-page .btn-light {
+  border-radius: 12px;
+  border: 1px solid #d6e0f3;
+  color: #224177;
+  background: #f8fbff;
+  font-weight: 600;
+}
+
+.user-form-page .btn-light:hover {
+  background: #eef4ff;
+  border-color: #c5d5f3;
+}
+
+.user-form-page .invalid-feedback {
+  font-size: 0.8rem;
+}
+
+@media (max-width: 991.98px) {
+  .user-form-page .user-form-content {
+    padding: 1.15rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .user-form-page .user-form-header {
+    padding: 1.1rem;
+  }
+
+  .user-form-page .user-form-content {
+    padding: 1rem;
+  }
+
+  .user-form-page .user-form-section {
+    padding: 0.95rem;
+  }
+
+  .user-form-page .profile-upload-wrap {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+}

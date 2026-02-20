@@ -3,6 +3,9 @@
 
     $currentUser = auth()->user();
     $isAdmin = $currentUser?->role === User::ROLE_ADMIN;
+    $isEditor = $currentUser?->role === User::ROLE_EDITOR;
+    $hasManagementAccess = $isAdmin || $isEditor;
+    $canManageMutations = $isAdmin;
     $roleLabel = $currentUser
         ? ($currentUser->role === User::ROLE_USER ? 'Member' : ucfirst($currentUser->role))
         : 'Guest';
@@ -15,7 +18,8 @@
 
     $membersMenuOpen = request()->routeIs('admin.members.*');
     $editorsMenuOpen = request()->routeIs('admin.editors.*');
-    $chitsMenuOpen = request()->routeIs('admin.chits.index') || request()->routeIs('admin.chits.show') || request()->routeIs('admin.chits.members.*');
+    $chitsMenuOpen = request()->routeIs('admin.chits.*');
+    $interestMenuOpen = request()->routeIs('admin.interest.*');
     $cssVersion = file_exists(public_path('niceadmin/assets/css/goud-custom.css'))
         ? filemtime(public_path('niceadmin/assets/css/goud-custom.css'))
         : time();
@@ -57,7 +61,17 @@
 
         <div class="search-bar">
             <form class="search-form d-flex align-items-center" method="GET" action="{{ route('dashboard') }}">
-                <input type="text" name="query" placeholder="Search" title="Enter search keyword" autocomplete="off">
+                @if (request()->routeIs('dashboard') && request()->filled('period'))
+                    <input type="hidden" name="period" value="{{ request()->query('period') }}">
+                @endif
+                <input
+                    type="text"
+                    name="query"
+                    value="{{ request()->routeIs('dashboard') ? request()->query('query', '') : '' }}"
+                    placeholder="Search"
+                    title="Enter search keyword"
+                    autocomplete="off"
+                >
                 <button type="submit" title="Search"><i class="bi bi-search"></i></button>
             </form>
         </div>
@@ -146,7 +160,7 @@
                 </a>
             </li>
 
-            @if ($isAdmin)
+            @if ($hasManagementAccess)
                 <li class="nav-item">
                     <a class="nav-link {{ $chitsMenuOpen ? '' : 'collapsed' }}" href="{{ route('admin.chits.index') }}">
                         <i class="bi bi-journal-text"></i>
@@ -154,10 +168,19 @@
                     </a>
                 </li>
 
+                @if ($canManageMutations)
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.chits.create') ? '' : 'collapsed' }}" href="{{ route('admin.chits.create') }}">
+                            <i class="bi bi-plus-circle"></i>
+                            <span>Create Chit</span>
+                        </a>
+                    </li>
+                @endif
+
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('admin.chits.create') ? '' : 'collapsed' }}" href="{{ route('admin.chits.create') }}">
-                        <i class="bi bi-plus-circle"></i>
-                        <span>Create Chit</span>
+                    <a class="nav-link {{ $interestMenuOpen ? '' : 'collapsed' }}" href="{{ route('admin.interest.index') }}">
+                        <i class="bi bi-graph-up-arrow"></i>
+                        <span>Interest</span>
                     </a>
                 </li>
 
@@ -171,38 +194,42 @@
                                 <i class="bi bi-circle"></i><span>All Members</span>
                             </a>
                         </li>
-                        <li>
-                            <a class="{{ request()->routeIs('admin.members.create') ? 'active' : '' }}" href="{{ route('admin.members.create') }}">
-                                <i class="bi bi-circle"></i><span>Add Member</span>
-                            </a>
-                        </li>
+                        @if ($canManageMutations)
+                            <li>
+                                <a class="{{ request()->routeIs('admin.members.create') ? 'active' : '' }}" href="{{ route('admin.members.create') }}">
+                                    <i class="bi bi-circle"></i><span>Add Member</span>
+                                </a>
+                            </li>
+                        @endif
                     </ul>
                 </li>
 
-                <li class="nav-item">
-                    <a class="nav-link {{ $editorsMenuOpen ? '' : 'collapsed' }}" data-bs-target="#editors-nav" data-bs-toggle="collapse" href="#">
-                        <i class="bi bi-person-badge"></i><span>Editors</span><i class="bi bi-chevron-down ms-auto"></i>
-                    </a>
-                    <ul id="editors-nav" class="nav-content collapse {{ $editorsMenuOpen ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
-                        <li>
-                            <a class="{{ request()->routeIs('admin.editors.index') ? 'active' : '' }}" href="{{ route('admin.editors.index') }}">
-                                <i class="bi bi-circle"></i><span>All Editors</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="{{ request()->routeIs('admin.editors.create') ? 'active' : '' }}" href="{{ route('admin.editors.create') }}">
-                                <i class="bi bi-circle"></i><span>Add Editor</span>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
+                @if ($isAdmin)
+                    <li class="nav-item">
+                        <a class="nav-link {{ $editorsMenuOpen ? '' : 'collapsed' }}" data-bs-target="#editors-nav" data-bs-toggle="collapse" href="#">
+                            <i class="bi bi-person-badge"></i><span>Editors</span><i class="bi bi-chevron-down ms-auto"></i>
+                        </a>
+                        <ul id="editors-nav" class="nav-content collapse {{ $editorsMenuOpen ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
+                            <li>
+                                <a class="{{ request()->routeIs('admin.editors.index') ? 'active' : '' }}" href="{{ route('admin.editors.index') }}">
+                                    <i class="bi bi-circle"></i><span>All Editors</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="{{ request()->routeIs('admin.editors.create') ? 'active' : '' }}" href="{{ route('admin.editors.create') }}">
+                                    <i class="bi bi-circle"></i><span>Add Editor</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
 
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('admin.system-logs.index') ? '' : 'collapsed' }}" href="{{ route('admin.system-logs.index') }}">
-                        <i class="bi bi-clipboard-data"></i>
-                        <span>System Logs</span>
-                    </a>
-                </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.system-logs.index') ? '' : 'collapsed' }}" href="{{ route('admin.system-logs.index') }}">
+                            <i class="bi bi-clipboard-data"></i>
+                            <span>System Logs</span>
+                        </a>
+                    </li>
+                @endif
             @else
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('profile.edit') ? '' : 'collapsed' }}" href="{{ route('profile.edit') }}">
@@ -246,11 +273,19 @@
             @if ($isAdmin)
                 <a href="{{ route('admin.chits.index') }}">Chits</a>
                 &nbsp;|&nbsp;
+                <a href="{{ route('admin.interest.index') }}">Interest</a>
+                &nbsp;|&nbsp;
                 <a href="{{ route('admin.members.create') }}">Add Member</a>
                 &nbsp;|&nbsp;
                 <a href="{{ route('admin.editors.create') }}">Add Editor</a>
                 &nbsp;|&nbsp;
                 <a href="{{ route('admin.system-logs.index') }}">System Logs</a>
+            @elseif ($isEditor)
+                <a href="{{ route('admin.chits.index') }}">Chits</a>
+                &nbsp;|&nbsp;
+                <a href="{{ route('admin.members.index') }}">Members</a>
+                &nbsp;|&nbsp;
+                <a href="{{ route('admin.interest.index') }}">Interest</a>
             @else
                 <a href="{{ route('profile.edit') }}">Account Settings</a>
             @endif

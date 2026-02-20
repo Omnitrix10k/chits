@@ -1,0 +1,190 @@
+.interest-report-page {
+  --interest-primary: #2f67d7;
+  --interest-primary-soft: #eaf1ff;
+  --interest-border: #d6e1f3;
+  --interest-text: #183b71;
+  --interest-muted: #6f84a6;
+}
+
+.interest-report-page .card {
+  border: 1px solid var(--interest-border);
+  border-radius: 16px;
+  box-shadow: 0 12px 28px rgba(22, 61, 126, 0.1);
+}
+
+.interest-toolbar-card .card-title {
+  color: var(--interest-text);
+}
+
+.interest-toolbar-card .card-title span {
+  color: #7e95b6;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.interest-report-page .form-label {
+  color: #6f86a9;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.interest-report-page .form-control,
+.interest-report-page .form-select {
+  min-height: 44px;
+  border-color: #cfdcf2;
+  color: #1c3f72;
+}
+
+.interest-report-page .form-control:focus,
+.interest-report-page .form-select:focus {
+  border-color: #6c92df;
+  box-shadow: 0 0 0 0.14rem rgba(47, 103, 215, 0.16);
+}
+
+.interest-report-page .btn-primary {
+  background: linear-gradient(135deg, #2f67d7 0%, #3e7af0 100%);
+  border-color: #2f67d7;
+  font-weight: 600;
+}
+
+.interest-report-page .btn-outline-secondary {
+  border-color: #c5d6ef;
+  color: #365884;
+}
+
+.interest-kpi-card {
+  background: linear-gradient(170deg, #ffffff 0%, #f6f9ff 100%);
+}
+
+.interest-kpi-card .card-body {
+  padding: 1rem 1.05rem;
+}
+
+.interest-kpi-card .kpi-label {
+  display: block;
+  color: #7a8fae;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 700;
+}
+
+.interest-kpi-card .kpi-value {
+  margin: 0.32rem 0 0.24rem;
+  color: #173b73;
+  font-size: 1.42rem;
+  font-weight: 800;
+}
+
+.interest-kpi-card .kpi-subtext {
+  color: #667f9f;
+  font-size: 0.83rem;
+}
+
+.interest-chart-card .card-title,
+.interest-highlight-card .card-title {
+  color: #1b3f76;
+}
+
+.interest-chart-area {
+  height: 320px;
+  width: 100%;
+}
+
+.interest-highlight-card .interest-top-name {
+  color: #1b3f76;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.interest-highlight-card .interest-top-metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #d8e3f8;
+  border-radius: 10px;
+  background: #f7faff;
+  padding: 0.55rem 0.7rem;
+  margin-bottom: 0.55rem;
+}
+
+.interest-highlight-card .interest-top-metric span {
+  color: #607a9d;
+  font-size: 0.82rem;
+}
+
+.interest-highlight-card .interest-top-metric strong {
+  color: #1f4d8f;
+}
+
+.interest-highlight-card .interest-mini-title {
+  color: #1f477f;
+  font-size: 0.86rem;
+  font-weight: 700;
+  margin-bottom: 0.55rem;
+}
+
+.interest-highlight-card .interest-mini-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.48rem;
+}
+
+.interest-highlight-card .interest-mini-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px dashed #d9e4f8;
+  padding-bottom: 0.38rem;
+}
+
+.interest-highlight-card .interest-mini-list li:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.interest-highlight-card .interest-mini-list span {
+  color: #617a9d;
+  font-size: 0.81rem;
+}
+
+.interest-highlight-card .interest-mini-list strong {
+  color: #224f90;
+  font-size: 0.86rem;
+}
+
+.interest-report-page .table thead th {
+  color: #748cab;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  border-bottom-color: #d7e3f7;
+}
+
+.interest-report-page .table tbody td {
+  color: #335785;
+  border-bottom-color: #e3ecfb;
+}
+
+.interest-report-page .interest-total-cell {
+  color: #1f548f;
+  font-weight: 700;
+}
+
+@media (max-width: 991.98px) {
+  .interest-chart-area {
+    height: 280px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .interest-chart-area {
+    height: 240px;
+  }
+}
+
